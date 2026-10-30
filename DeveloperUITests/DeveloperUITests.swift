@@ -2,8 +2,6 @@
 //  DeveloperUITests.swift
 //  DeveloperUITests
 //
-//  Created by Chris on 10/29/26.
-//
 
 import XCTest
 

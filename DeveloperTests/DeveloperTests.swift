@@ -2,8 +2,6 @@
 //  DeveloperTests.swift
 //  DeveloperTests
 //
-//  Created by Chris on 10/29/26.
-//
 
 import Testing
 

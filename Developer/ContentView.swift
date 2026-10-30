@@ -2,8 +2,6 @@
 //  ContentView.swift
 //  Developer
 //
-//  Created by Chris on 10/29/26.
-//
 
 import SwiftUI
 
