@@ -21,7 +21,11 @@ struct AdaptiveSplitView: View {
 
     @Environment(SessionStore.self) private var store
     @Environment(WatchProgressStore.self) private var progressStore
+    #if os(macOS)
+    @State private var history = BrowserNavigationState(current: Location(selection: .discover))
+    #else
     @State private var history = BrowserNavigationState(current: Location(selection: .event(.techTalks)))
+    #endif
     private var location: Location { history.current }
     @AppStorage("sidebarBrowseExpanded") private var browseExpanded = true
     @AppStorage("sidebarTopicsExpanded") private var topicsExpanded = true
