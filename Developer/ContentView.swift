@@ -12,7 +12,7 @@ struct ContentView: View {
     @State private var newsStore = NewsStore()
     @State private var discoverStore = ContentStore()
     @State private var downloadStore = DownloadEngine()
-    @State private var selectedTab: AppTab = .browse
+    @State private var selectedTab: AppTab = .discover
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     #endif

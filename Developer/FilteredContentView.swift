@@ -13,15 +13,25 @@ struct FilteredContentView: View {
     let title: String
     let groups: [ContentItemGroup]
     var shareURL: URL? = nil
+    var shareLabel: LocalizedStringKey = "Share…"
+    var allowsPreferredTopicsFilter = true
 
-    init(title: String, groups: [ContentItemGroup], shareURL: URL? = nil) {
+    init(
+        title: String,
+        groups: [ContentItemGroup],
+        shareURL: URL? = nil,
+        shareLabel: LocalizedStringKey = "Share…",
+        allowsPreferredTopicsFilter: Bool = true
+    ) {
         self.title = title
         self.groups = groups
         self.shareURL = shareURL
+        self.shareLabel = shareLabel
+        self.allowsPreferredTopicsFilter = allowsPreferredTopicsFilter
     }
 
-    init(title: String, sessions: [WWDCSession], shareURL: URL? = nil) {
-        self.init(title: title, groups: [ContentItemGroup(sessions: sessions)], shareURL: shareURL)
+    init(title: String, sessions: [WWDCSession], shareURL: URL? = nil, shareLabel: LocalizedStringKey = "Share…") {
+        self.init(title: title, groups: [ContentItemGroup(sessions: sessions)], shareURL: shareURL, shareLabel: shareLabel)
     }
 
     @Environment(WatchProgressStore.self) private var progressStore
@@ -29,7 +39,7 @@ struct FilteredContentView: View {
     @Environment(DownloadEngine.self) private var downloadStore
 
     @AppStorage("sessionListLayout") private var layout = FilteredContentLayout.list
-    @AppStorage("sessionListFilter") private var filter = AppContentFilter.all
+    @AppStorage("sessionListFilter") private var storedFilter = AppContentFilter.all
     @AppStorage(PreferredTopics.storageKey) private var preferredTopicsStorage = ""
     @State private var isManagingPreferredTopics = false
     @State private var searchText = ""
@@ -45,6 +55,15 @@ struct FilteredContentView: View {
         #else
         false
         #endif
+    }
+
+    private var filter: AppContentFilter {
+        get { storedFilter == .preferredTopics && !allowsPreferredTopicsFilter ? .all : storedFilter }
+        nonmutating set { storedFilter = newValue }
+    }
+
+    private var filterBinding: Binding<AppContentFilter> {
+        Binding { filter } set: { filter = $0 }
     }
 
     private var filteredGroups: [ContentItemGroup] {
@@ -184,6 +203,9 @@ struct FilteredContentView: View {
         if let session = entry.session {
             NavigationLink(value: Route.session(session), label: label)
                 .sessionContextMenu(for: session)
+        } else if case .article(let item) = entry {
+            NavigationLink(value: entry.route, label: label)
+                .articleContextMenu(for: item)
         } else {
             NavigationLink(value: entry.route, label: label)
         }
@@ -200,13 +222,8 @@ struct FilteredContentView: View {
         ToolbarSpacer(.fixed)
 
         #if os(iOS)
-        if usesSidebarStyle {
-            ToolbarItem {
-                moreMenu
-            }
-        } else {
-            layoutPickerItem
-            shareItems
+        ToolbarItem {
+            moreMenu
         }
         #else
         layoutPickerItem
@@ -243,19 +260,19 @@ struct FilteredContentView: View {
 
     private func shareLink(for url: URL) -> some View {
         ShareLink(item: url, preview: SharePreview("\(title) - Videos - Apple Developer")) {
-            Label("Share", systemImage: "square.and.arrow.up")
+            Label(shareLabel, systemImage: "square.and.arrow.up")
         }
     }
 
     private var moreMenu: some View {
         Menu {
+            if let shareURL {
+                shareLink(for: shareURL)
+                Divider()
+            }
+
             layoutPicker
                 .pickerStyle(.inline)
-
-            if let shareURL {
-                Divider()
-                shareLink(for: shareURL)
-            }
         } label: {
             Label("More", systemImage: "ellipsis")
         }
@@ -263,20 +280,24 @@ struct FilteredContentView: View {
 
     private var filterMenu: some View {
         Menu {
-            Picker("Show", selection: $filter) {
-                Text("All Items").tag(AppContentFilter.all)
+            Picker("Show", selection: filterBinding) {
+                Label("All Items", systemImage: "square.grid.3x3.fill").tag(AppContentFilter.all)
                 Divider()
-                Text("Only Unwatched").tag(AppContentFilter.unwatched)
-                Text("Only Bookmarked").tag(AppContentFilter.bookmarked)
-                Text("Only Downloaded").tag(AppContentFilter.downloaded)
-                Text("Only Preferred Topics").tag(AppContentFilter.preferredTopics)
+                Label("Only Unwatched", systemImage: "eye.slash").tag(AppContentFilter.unwatched)
+                Label("Only Bookmarked", systemImage: "bookmark").tag(AppContentFilter.bookmarked)
+                Label("Only Downloaded", systemImage: "arrow.down.circle").tag(AppContentFilter.downloaded)
+                if allowsPreferredTopicsFilter {
+                    Label("Only Preferred Topics", systemImage: "star").tag(AppContentFilter.preferredTopics)
+                }
             }
             .pickerStyle(.inline)
 
-            Divider()
+            if allowsPreferredTopicsFilter {
+                Divider()
 
-            Button("Manage Preferred Topics") {
-                isManagingPreferredTopics = true
+                Button("Manage Preferred Topics", systemImage: "slider.horizontal.3") {
+                    isManagingPreferredTopics = true
+                }
             }
         } label: {
             Label("Filter", systemImage: filter == .all
@@ -297,7 +318,9 @@ struct TopicContentView: View {
             title: topic.name,
             groups: contentStore.groups(topic: topic.name)
                 ?? [ContentItemGroup(sessions: sessionStore.sessions(topic: topic.name))],
-            shareURL: topic.pageURL
+            shareURL: topic.pageURL,
+            shareLabel: "Share Topic…",
+            allowsPreferredTopicsFilter: false
         )
         .task { await contentStore.load() }
     }

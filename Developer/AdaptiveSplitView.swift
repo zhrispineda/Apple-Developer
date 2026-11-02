@@ -184,7 +184,7 @@ struct AdaptiveSplitView: View {
         case .topic(let topic):
             TopicContentView(topic: topic)
         case .event(let event):
-            FilteredContentView(title: event.name, sessions: store.sessions(in: event), shareURL: event.pageURL)
+            FilteredContentView(title: event.name, sessions: store.sessions(in: event), shareURL: event.pageURL, shareLabel: "Share Event…")
         case .account:
             AccountList()
         case nil:

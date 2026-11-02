@@ -9,13 +9,16 @@ extension View {
     func sessionContextMenu(for session: WWDCSession) -> some View {
         contextMenu { ContentItemContextMenu(session: session) }
     }
+
+    func articleContextMenu(for item: ContentItem) -> some View {
+        contextMenu { ArticleContextMenu(item: item) }
+    }
 }
 
 struct ContentItemContextMenu: View {
     let session: WWDCSession
 
     @Environment(WatchProgressStore.self) private var progressStore
-    @Environment(SynchronizedListManager.self) private var bookmarkStore
     @Environment(DownloadEngine.self) private var downloadStore
 
     private var isWatched: Bool {
@@ -29,18 +32,10 @@ struct ContentItemContextMenu: View {
             }
 
             Button("Copy Link", systemImage: "link") {
-                copyLink()
+                copyLink(session.url)
             }
 
-            if bookmarkStore.isBookmarked(session.id) {
-                Button("Remove from Bookmarks", systemImage: "bookmark.slash") {
-                    bookmarkStore.toggle(session.id)
-                }
-            } else {
-                Button("Add to Bookmarks", systemImage: "bookmark") {
-                    bookmarkStore.toggle(session.id)
-                }
-            }
+            BookmarkMenuButton(id: session.id)
 
             if isWatched {
                 Button("Mark as Unwatched", systemImage: "square") {
@@ -70,13 +65,50 @@ struct ContentItemContextMenu: View {
             }
         }
     }
+}
 
-    private func copyLink() {
-        #if canImport(UIKit)
-        UIPasteboard.general.url = session.url
-        #elseif canImport(AppKit)
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(session.url.absoluteString, forType: .string)
-        #endif
+struct ArticleContextMenu: View {
+    let item: ContentItem
+
+    var body: some View {
+        Section {
+            ShareLink(item: item.webURL) {
+                Label("Share…", systemImage: "square.and.arrow.up")
+            }
+
+            Button("Copy Link", systemImage: "link") {
+                copyLink(item.webURL)
+            }
+
+            BookmarkMenuButton(id: item.id)
+        }
     }
+}
+
+/// Adds or removes a session or article from Bookmarks.
+struct BookmarkMenuButton: View {
+    let id: String
+
+    @Environment(SynchronizedListManager.self) private var bookmarkStore
+
+    var body: some View {
+        if bookmarkStore.isBookmarked(id) {
+            Button("Remove from Bookmarks", systemImage: "bookmark.slash") {
+                bookmarkStore.toggle(id)
+            }
+        } else {
+            Button("Add to Bookmarks", systemImage: "bookmark") {
+                bookmarkStore.toggle(id)
+            }
+        }
+    }
+}
+
+private func copyLink(_ url: URL) {
+    #if canImport(UIKit)
+    UIPasteboard.general.url = url
+    #elseif canImport(AppKit)
+    NSPasteboard.general.clearContents()
+    NSPasteboard.general.setString(url.absoluteString, forType: .string)
+    #endif
 }

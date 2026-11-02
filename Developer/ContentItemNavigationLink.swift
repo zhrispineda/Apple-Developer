@@ -21,6 +21,7 @@ struct ContentItemNavigationLink<Label: View>: View {
                     .sessionContextMenu(for: item.session)
             } else if store.page(for: item) != nil {
                 NavigationLink(value: Route.article(item)) { label }
+                    .articleContextMenu(for: item)
             } else if let news = newsItem {
                 NavigationLink(value: Route.news(news)) { label }
             } else {

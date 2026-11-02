@@ -25,9 +25,6 @@ struct ContentPageView: View {
             .padding(.vertical)
         }
         .navigationTitle("Discover")
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
         .overlay {
             if store.sections.isEmpty {
                 if store.isLoading {
@@ -42,10 +39,6 @@ struct ContentPageView: View {
                     }
                 }
             }
-        }
-        .refreshable {
-            await store.load(force: true)
-            await store.refreshLive(force: true)
         }
         .task { await store.load() }
         .task { await store.monitorLive() }

@@ -9,6 +9,7 @@ struct ContentItemPlainDetail: View {
     let item: ContentItem
 
     @Environment(ContentStore.self) private var store
+    @Environment(SynchronizedListManager.self) private var bookmarkStore
     @Environment(\.openRoute) private var openRoute
     @State private var linkedRoute: Route?
 
@@ -35,6 +36,16 @@ struct ContentItemPlainDetail: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                let isBookmarked = bookmarkStore.isBookmarked(item.id)
+                Button(
+                    isBookmarked ? "Remove from Bookmarks" : "Add to Bookmarks",
+                    systemImage: isBookmarked ? "bookmark.fill" : "bookmark"
+                ) {
+                    bookmarkStore.toggle(item.id)
+                }
+            }
+
             ToolbarItem(placement: .primaryAction) {
                 Menu {
                     ShareLink(item: item.webURL)

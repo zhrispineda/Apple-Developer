@@ -55,7 +55,7 @@ struct BrowseView: View {
                 destinationView(for: destination)
             }
             .navigationDestination(for: WWDCEvent.self) { event in
-                FilteredContentView(title: event.name, sessions: store.sessions(in: event), shareURL: event.pageURL)
+                FilteredContentView(title: event.name, sessions: store.sessions(in: event), shareURL: event.pageURL, shareLabel: "Share Event…")
             }
             .navigationDestination(for: Route.self) { route in
                 RouteView(route: route)
@@ -118,20 +118,28 @@ struct BrowseView: View {
 
 struct BookmarksView: View {
     @Environment(SessionStore.self) private var store
+    @Environment(ContentStore.self) private var contentStore
     @Environment(SynchronizedListManager.self) private var bookmarkStore
 
     var body: some View {
-        let sessions = store.sessions(withIDs: bookmarkStore.bookmarkedIDs)
-        FilteredContentView(title: "Bookmarks", sessions: sessions)
+        let ids = bookmarkStore.bookmarkedIDs
+        let sessions = store.sessions(withIDs: ids)
+        let articles = ids
+            .compactMap(contentStore.item(withID:))
+            .filter(\.isArticle)
+            .sorted { ($0.publishedAt ?? .distantPast) > ($1.publishedAt ?? .distantPast) }
+        let entries = sessions.map(ContentEntry.video) + articles.map(ContentEntry.article)
+        FilteredContentView(title: "Bookmarks", groups: [ContentItemGroup(id: "all", title: nil, entries: entries)])
             .overlay {
-                if sessions.isEmpty {
+                if entries.isEmpty {
                     ContentUnavailableView(
                         "No Bookmarks",
                         systemImage: "bookmark",
-                        description: Text("Touch and hold a video, then choose Add to Bookmarks.")
+                        description: Text("Touch and hold a video or article, then choose Add to Bookmarks.")
                     )
                 }
             }
+            .task { await contentStore.load() }
     }
 }
 
@@ -177,5 +185,6 @@ struct PlaceholderListView: View {
         .environment(DownloadEngine())
         .environment(SynchronizedListManager())
         .environment(NewsStore())
+        .environment(ContentStore())
         .task { await store.load() }
 }
