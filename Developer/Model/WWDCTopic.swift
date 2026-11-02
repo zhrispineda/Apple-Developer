@@ -5,15 +5,12 @@
 
 import Foundation
 
-/// A topic on developer.apple.com, with the icon the Browse tab shows for it.
 struct WWDCTopic: Identifiable, Hashable {
     let name: String
     let systemImage: String
 
     var id: String { name }
 
-    /// Apple's topics in the Developer app's order. Topics that show up in the
-    /// data but aren't listed here are appended with a generic icon.
     static let known: [WWDCTopic] = [
         WWDCTopic(name: "AI & Machine Learning", systemImage: "sparkles"),
         WWDCTopic(name: "Accessibility & Inclusion", systemImage: "person.2"),

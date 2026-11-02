@@ -5,14 +5,11 @@
 
 import Foundation
 
-/// On-disk cache for the session list, per-session playback details, and thumbnails.
-/// Everything lives in the Caches directory so the system can purge it if under pressure.
 nonisolated enum WWDCCache {
     private static let rootDirectory = URL.cachesDirectory.appending(path: "WWDC", directoryHint: .isDirectory)
     private static let sessionsFile = rootDirectory.appending(path: "sessions.json")
     private static let detailsDirectory = rootDirectory.appending(path: "Details", directoryHint: .isDirectory)
 
-    /// URL session used by `AsyncImage` for thumbnails.
     static let imageSession: URLSession = {
         let configuration = URLSessionConfiguration.default
         configuration.urlCache = URLCache(
@@ -54,7 +51,6 @@ nonisolated enum WWDCCache {
 
     private static let discoverFile = rootDirectory.appending(path: "discover.json")
 
-    /// Off the main actor: the feed holds every content item, so it's a few megabytes.
     @concurrent
     static func loadDiscover() async -> DiscoverFeed? {
         guard let data = try? Data(contentsOf: discoverFile) else { return nil }
@@ -75,8 +71,6 @@ nonisolated enum WWDCCache {
         init(_ details: WWDCSessionDetails) { self.details = details }
     }
 
-    /// Returns details from memory if possible, otherwise from disk. Runs off the
-    /// main actor so decoding a long transcript doesn't stall the UI.
     @concurrent
     static func loadDetails(for sessionID: String) async -> WWDCSessionDetails? {
         if let box = memoryCache.object(forKey: sessionID as NSString) { return box.details }

@@ -5,8 +5,6 @@
 
 import Foundation
 
-/// Fetches session videos by scraping the per-event listing pages on
-/// developer.apple.com (e.g. https://developer.apple.com/videos/wwdc2024/).
 nonisolated struct WWDCVideoService: Sendable {
     enum ServiceError: LocalizedError {
         case noSessionsFound
@@ -20,8 +18,6 @@ nonisolated struct WWDCVideoService: Sendable {
 
     var session: URLSession = .shared
 
-    /// Fetches every event's sessions concurrently. If an event fails to load, that
-    /// event's sessions from `fallback` (typically the cached list) are kept instead.
     func fetchAllSessions(fallback: [WWDCSession] = []) async throws -> [WWDCSession] {
         let currentYear = Calendar.current.component(.year, from: .now)
         let events = WWDCEvent.allEvents(through: currentYear)
@@ -44,8 +40,6 @@ nonisolated struct WWDCVideoService: Sendable {
         return sessions
     }
 
-    /// Fetches a session's page to find its video stream and description.
-    /// `@concurrent` so the regex scraping of the (large) page runs off the main actor.
     @concurrent
     func fetchDetails(for wwdcSession: WWDCSession) async throws -> WWDCSessionDetails {
         let (data, response) = try await session.data(from: wwdcSession.url)
@@ -54,9 +48,7 @@ nonisolated struct WWDCVideoService: Sendable {
         }
         return Self.parseDetails(from: String(decoding: data, as: UTF8.self))
     }
-
-    /// Extracts the video URL and description from a session's play page.
-    /// Prefers the HLS stream (adaptive bitrate), falling back to the HD download.
+    
     static func parseDetails(from html: String) -> WWDCSessionDetails {
         let hls = html.firstMatch(of: /https:\/\/devstreaming-cdn\.apple\.com\/[^"'\s]+\.m3u8/)
         let download = html.firstMatch(of: /https:\/\/devstreaming-cdn\.apple\.com\/[^"'\s?]+_hd[^"'\s?]*\.(?:mp4|mov)/)
@@ -80,8 +72,6 @@ nonisolated struct WWDCVideoService: Sendable {
         )
     }
 
-    /// The part of the details supplement after `heading`, up to the next `<h2>` or
-    /// the transcript supplement.
     private static func detailsSection(after heading: String, in html: String) -> Substring? {
         guard let start = html.range(of: heading) else { return nil }
         let rest = html[start.upperBound...]
@@ -89,11 +79,6 @@ nonisolated struct WWDCVideoService: Sendable {
         return rest[..<(ends.min() ?? rest.endIndex)]
     }
 
-    /// Parses the Resources list. Single links are resources; the HD/SD video
-    /// options are a nested list without a direct link, so they're skipped:
-    ///
-    ///     <li class="document"><a href="https://developer.apple.com/documentation/StoreKit" target="_blank">StoreKit</a></li>
-    ///     <li class="download"><a href="https://devstreaming-cdn.apple.com/…/605_working_with_metal_advanced.pdf?dl=1">Presentation Slides (PDF)</a></li>
     static func parseResources(from html: String) -> [SessionResource] {
         guard let section = detailsSection(after: "<h2>Resources</h2>", in: html) else { return [] }
         return section.matches(of: /<li class="([a-z-]+)"><a href="([^"]+)"[^>]*>([^<]*)<\/a>/).compactMap { match in
@@ -106,10 +91,6 @@ nonisolated struct WWDCVideoService: Sendable {
         }
     }
 
-    /// Parses Related Videos, which are grouped under event headings:
-    ///
-    ///     <h4>WWDC24</h4>
-    ///     <ul class="links small"><li class="video"><a href="/videos/play/wwdc2024/10062">Explore App Store server APIs…</a></li></ul>
     static func parseRelatedVideos(from html: String) -> [RelatedVideo] {
         guard let section = detailsSection(after: "<h2>Related Videos</h2>", in: html) else { return [] }
         var seen = Set<String>()
@@ -124,9 +105,6 @@ nonisolated struct WWDCVideoService: Sendable {
         }
     }
 
-    /// Parses the chapter list that newer sessions have:
-    ///
-    ///     <li class="chapter-item" data-start-time="30">0:30 - <a class="jump-to-time" …>Touch across frameworks</a></li>
     static func parseChapters(from html: String) -> [SessionChapter] {
         html.matches(of: /<li class="chapter-item" data-start-time="([\d.]+)">[^<]*<a[^>]*>([^<]*)<\/a>/)
             .compactMap { match in
@@ -135,13 +113,7 @@ nonisolated struct WWDCVideoService: Sendable {
                 return title.isEmpty ? nil : SessionChapter(start: start, title: title)
             }
     }
-
-    /// Parses the code samples that newer sessions have. Each is a timestamped
-    /// title followed by code that the site has already syntax-highlighted:
-    ///
-    ///     <li class="sample-code-main-container">
-    ///       <p>2:08 - <a class="jump-to-time-sample" … data-start-time="128">Custom button</a></p>
-    ///       <pre class="code-source"><code><span class="syntax-keyword">class</span> …</code></pre>
+    
     static func parseCodeSamples(from html: String) -> [CodeSample] {
         html.split(separator: #"<li class="sample-code-main-container">"#).dropFirst().compactMap { chunk in
             guard let header = chunk.firstMatch(of: /data-start-time="([\d.]+)">([^<]*)<\/a>/),
@@ -153,8 +125,6 @@ nonisolated struct WWDCVideoService: Sendable {
         }
     }
 
-    /// Converts highlighted HTML (`<span class="syntax-keyword">let</span> x`) into
-    /// tokens. Spans can nest, so the innermost span's kind wins.
     static func highlightTokens(from html: String) -> [CodeSample.Token] {
         var tokens: [CodeSample.Token] = []
         var kindStack: [String?] = []
@@ -185,8 +155,6 @@ nonisolated struct WWDCVideoService: Sendable {
         return tokens
     }
 
-    /// Maps highlight classes to a kind: "syntax-title class_" → "class",
-    /// "syntax-title function_" → "function", "syntax-keyword" → "keyword".
     private static func syntaxKind(fromClasses classes: String) -> String? {
         if classes.contains("class_") { return "class" }
         if classes.contains("function_") { return "function" }
@@ -195,13 +163,6 @@ nonisolated struct WWDCVideoService: Sendable {
             .map { String($0.dropFirst("syntax-".count)) }
     }
 
-    /// Parses the transcript section of a session's play page. The markup is
-    /// paragraphs of timestamped sentences (the closing tags are mis-nested on
-    /// the site, so paragraphs are split on `</p><p>` rather than parsed as HTML):
-    ///
-    ///     <section id="transcript-content">
-    ///       <p><span class="sentence"><span data-start="13.0">Hello. </span></span>…</p><p>…
-    ///     </section>
     static func parseTranscript(from html: String) -> [TranscriptParagraph] {
         guard let start = html.range(of: #"<section id="transcript-content">"#),
               let end = html.range(of: "</section>", range: start.upperBound..<html.endIndex)
@@ -219,7 +180,6 @@ nonisolated struct WWDCVideoService: Sendable {
             }
     }
 
-    /// Fetches and parses the session listing page for a single event.
     func fetchSessions(for event: WWDCEvent) async throws -> [WWDCSession] {
         let pageURL = Self.baseURL.appending(path: "videos/\(event.id)/")
         let (data, response) = try await session.data(from: pageURL)
@@ -230,14 +190,6 @@ nonisolated struct WWDCVideoService: Sendable {
         return Self.parseSessions(from: html, eventID: event.id)
     }
 
-    /// Parses `vc-card` anchors out of an event's listing page, in page order.
-    /// Each card looks like:
-    ///
-    ///     <a href="/videos/play/wwdc2024/101/" class="vc-card ...">
-    ///       <img class="vc-card__image" src="..."> <span class="vc-card__duration">104:04</span>
-    ///       <h5 class="vc-card__title">Keynote</h5>
-    ///       <span ... data-filter-topics="Essentials"></span>
-    ///     </a>
     static func parseSessions(from html: String, eventID: String) -> [WWDCSession] {
         let cardPattern = /<a href="(\/videos\/play\/([a-z0-9-]+)\/(\d+)\/)" class="vc-card[^"]*"[^>]*>(.*?)<\/a>/
             .dotMatchesNewlines()
@@ -280,7 +232,6 @@ nonisolated struct WWDCVideoService: Sendable {
         return sessions
     }
 
-    /// Decodes the handful of HTML entities that appear in session titles.
     private static func decodeEntities(_ string: String) -> String {
         string
             .replacing("&nbsp;", with: " ")

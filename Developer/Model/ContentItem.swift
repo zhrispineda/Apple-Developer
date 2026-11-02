@@ -5,16 +5,11 @@
 
 import Foundation
 
-/// A video, session, article, or news item from the Developer app's content feed.
 nonisolated struct ContentItem: Codable, Hashable, Sendable, Identifiable {
-    /// e.g. "wwdc2026-102" or "meet-with-apple-284", matching `WWDCSession.id`.
     let id: String
-    /// e.g. "wwdc2026", "tech-talks", "articles", or "news".
     let eventID: String
     let eventName: String
-    /// The item's number within its event, e.g. 102.
     let number: Int
-    /// "Video", "Session", "Get-Together", "Article", "Special Event", etc.
     let type: String
     let title: String
     let summary: String
@@ -53,7 +48,6 @@ nonisolated struct ContentItem: Codable, Hashable, Sendable, Identifiable {
     }
 }
 
-/// The Discover tab's large banner.
 nonisolated struct DiscoverHero: Codable, Hashable, Sendable {
     let title: String
     let body: String
@@ -62,12 +56,9 @@ nonisolated struct DiscoverHero: Codable, Hashable, Sendable {
     let itemID: String?
 }
 
-/// A titled row on the Discover tab, such as "On Now" or "Recent videos".
 nonisolated struct DiscoverItemList: Codable, Hashable, Sendable, Identifiable {
     enum Layout: String, Codable, Sendable {
-        /// Thumbnail cards with the title below.
         case card
-        /// Wide tiles with a square image, title, and date (used for news).
         case wideCard
     }
 

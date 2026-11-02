@@ -12,7 +12,6 @@ nonisolated struct ContentPage: Codable, Hashable, Sendable {
 
 nonisolated struct ContentPageComponent: Codable, Hashable, Sendable, Identifiable {
     enum Kind: Codable, Hashable, Sendable {
-        /// The colored eyebrow above the title, e.g. "NEWS AND UPDATES".
         case category(text: String, lightColor: String?, darkColor: String?)
         case title(String)
         case date(Date)
@@ -54,12 +53,10 @@ nonisolated struct TextStyle: Codable, Hashable, Sendable {
     var color: String?
 }
 
-/// A documentation page, sample code project, or other link from the content feed.
 nonisolated struct ContentResource: Codable, Hashable, Sendable, Identifiable {
     let id: Int
     let title: String
     let url: URL
-    /// "documentation", "samplecode", "guide", "download", or "developerForum".
     let type: String
     let summary: String?
 }
