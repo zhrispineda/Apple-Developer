@@ -18,12 +18,12 @@ struct WatchProgress: Codable, Sendable {
 final class WatchProgressStore {
     private(set) var progress: [String: WatchProgress] = [:]
     private static let watchedThreshold: Double = 30
-    private static let defaultsKey = "watchProgress"
+    static let defaultsKey = "watchProgress"
 
     private let defaults: UserDefaults
-    private let cloud: NSUbiquitousKeyValueStore?
+    private let cloud: CloudKeyValueStore?
 
-    init(defaults: UserDefaults = .standard, cloud: NSUbiquitousKeyValueStore? = nil) {
+    init(defaults: UserDefaults = .standard, cloud: CloudKeyValueStore? = nil) {
         self.defaults = defaults
         self.cloud = cloud
         progress = (Self.decode(defaults.data(forKey: Self.defaultsKey)) ?? [:])

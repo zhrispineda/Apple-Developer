@@ -11,7 +11,7 @@ struct AdaptiveSplitView: View {
         case news, bookmarks, downloaded, continueWatching
         case topic(WWDCTopic)
         case event(WWDCEvent)
-        case account
+        case account, diagnostics
     }
     
     struct Location: Hashable {
@@ -126,6 +126,10 @@ struct AdaptiveSplitView: View {
                     }
                 }
             }
+
+            Section("Debug") {
+                Label("Settings", systemImage: "gearshape").tag(SidebarItem.diagnostics)
+            }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             accountFooter
@@ -187,6 +191,8 @@ struct AdaptiveSplitView: View {
             FilteredContentView(title: event.name, sessions: store.sessions(in: event), shareURL: event.pageURL, shareLabel: "Share Event…")
         case .account:
             AccountList()
+        case .diagnostics:
+            DiagnosticsView()
         case nil:
             ContentUnavailableView("Select an Item", systemImage: "sidebar.left")
         }

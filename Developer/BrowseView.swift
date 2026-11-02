@@ -6,7 +6,7 @@
 import SwiftUI
 
 enum BrowseDestination: Hashable {
-    case news, bookmarks, downloaded, continueWatching
+    case news, bookmarks, downloaded, continueWatching, diagnostics
     case topic(WWDCTopic)
 }
 
@@ -47,6 +47,12 @@ struct BrowseView: View {
                     } header: {
                         sectionHeader("Events")
                     }
+                }
+
+                Section {
+                    browseRow("Settings", systemImage: "gearshape", value: BrowseDestination.diagnostics)
+                } header: {
+                    sectionHeader("Debug")
                 }
             }
             .listStyle(.plain)
@@ -110,6 +116,8 @@ struct BrowseView: View {
             DownloadedView()
         case .continueWatching:
             ContinueWatchingView()
+        case .diagnostics:
+            DiagnosticsView()
         case .topic(let topic):
             TopicContentView(topic: topic)
         }
@@ -186,5 +194,6 @@ struct PlaceholderListView: View {
         .environment(SynchronizedListManager())
         .environment(NewsStore())
         .environment(ContentStore())
+        .environment(CloudSyncMonitor())
         .task { await store.load() }
 }

@@ -9,11 +9,11 @@ import Foundation
 final class SynchronizedListManager {
     private(set) var bookmarkedIDs: Set<String>
 
-    private static let defaultsKey = "bookmarkedSessions"
+    static let defaultsKey = "bookmarkedSessions"
     private let defaults: UserDefaults
-    private let cloud: NSUbiquitousKeyValueStore?
+    private let cloud: CloudKeyValueStore?
 
-    init(defaults: UserDefaults = .standard, cloud: NSUbiquitousKeyValueStore? = nil) {
+    init(defaults: UserDefaults = .standard, cloud: CloudKeyValueStore? = nil) {
         self.defaults = defaults
         self.cloud = cloud
         bookmarkedIDs = Set(defaults.stringArray(forKey: Self.defaultsKey) ?? [])

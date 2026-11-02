@@ -7,11 +7,12 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var store = SessionStore()
-    @State private var progressStore = WatchProgressStore(cloud: .default)
-    @State private var bookmarkStore = SynchronizedListManager(cloud: .default)
+    @State private var progressStore = WatchProgressStore(cloud: NSUbiquitousKeyValueStore.default)
+    @State private var bookmarkStore = SynchronizedListManager(cloud: NSUbiquitousKeyValueStore.default)
     @State private var newsStore = NewsStore()
     @State private var discoverStore = ContentStore()
     @State private var downloadStore = DownloadEngine()
+    @State private var cloudMonitor = CloudSyncMonitor()
     @State private var selectedTab: AppTab = .discover
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -44,6 +45,7 @@ struct ContentView: View {
         .environment(newsStore)
         .environment(discoverStore)
         .environment(downloadStore)
+        .environment(cloudMonitor)
         .task { await store.load() }
     }
     
