@@ -102,7 +102,7 @@ struct AdaptiveSplitView: View {
             Section {
                 Label("Search", systemImage: "magnifyingglass").tag(SidebarItem.search)
                 Label("Discover", systemImage: "star").tag(SidebarItem.discover)
-                Label("WWDC", systemImage: "lanyardcard").tag(SidebarItem.wwdc)
+                Label("WWDC", image: "wwdc.badge").tag(SidebarItem.wwdc)
             }
 
             Section("Browse", isExpanded: $browseExpanded) {
@@ -126,7 +126,12 @@ struct AdaptiveSplitView: View {
             if !store.events.isEmpty {
                 Section("Events", isExpanded: $eventsExpanded) {
                     ForEach(store.events) { event in
-                        Label(event.name, systemImage: event.systemImage).tag(SidebarItem.event(event))
+                        Label {
+                            Text(event.name)
+                        } icon: {
+                            Image(symbol: event.systemImage)
+                        }
+                        .tag(SidebarItem.event(event))
                     }
                 }
             }

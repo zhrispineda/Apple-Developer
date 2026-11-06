@@ -11,7 +11,7 @@ nonisolated struct WWDCEvent: Identifiable, Hashable, Sendable {
     let systemImage: String
 
     static func wwdc(_ year: Int) -> WWDCEvent {
-        WWDCEvent(id: "wwdc\(year)", name: "WWDC\(String(year).suffix(2))", systemImage: "lanyardcard.fill")
+        WWDCEvent(id: "wwdc\(year)", name: "WWDC\(String(year).suffix(2))", systemImage: "wwdc.badge")
     }
 
     static let meetWithApple = WWDCEvent(id: "meet-with-apple", name: "Meet with Apple", systemImage: "lanyardcard.fill")
