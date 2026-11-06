@@ -11,7 +11,7 @@ struct ContentView: View {
     @State private var bookmarkStore = SynchronizedListManager(cloud: NSUbiquitousKeyValueStore.default)
     @State private var newsStore = NewsStore()
     @State private var discoverStore = ContentStore()
-    @State private var downloadStore = DownloadEngine()
+    @State private var downloadStore = DownloadEngine.shared
     @State private var cloudMonitor = CloudSyncMonitor()
     @State private var selectedTab: AppTab = .discover
     #if os(iOS)

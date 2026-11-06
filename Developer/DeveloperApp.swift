@@ -22,5 +22,10 @@ struct DeveloperApp: App {
         WindowGroup {
             ContentView()
         }
+        #if !os(macOS)
+        .backgroundTask(.urlSession(DownloadEngine.backgroundSessionIdentifier)) {
+            await DownloadEngine.shared.handleBackgroundEvents()
+        }
+        #endif
     }
 }

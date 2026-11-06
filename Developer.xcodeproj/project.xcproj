@@ -11,7 +11,7 @@
     ],
   },
   "files": [
-    { "path": "README.md", "target-membership": [ "Developer/resources" ] },
+    { "path": "README.md" },
     { "kind": "folder", "path": "Developer", "target-membership": [ "Developer" ] },
     { "kind": "folder", "path": "DeveloperTests", "target-membership": [ "DeveloperTests" ] },
     { "kind": "folder", "path": "DeveloperUITests", "target-membership": [ "DeveloperUITests" ] },
@@ -44,7 +44,7 @@
         "CODE_SIGN_IDENTITY[sdk=macosx*]": "Apple Development",
         "CODE_SIGN_STYLE": "Automatic",
         "CURRENT_PROJECT_VERSION": "1",
-        "DEVELOPMENT_TEAM": "6Q4MRN2FMC",
+        "DEVELOPMENT_TEAM": "",
         "ENABLE_APP_SANDBOX": "YES",
         "ENABLE_OUTGOING_NETWORK_CONNECTIONS": "YES",
         "ENABLE_PREVIEWS": "YES",
