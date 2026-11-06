@@ -226,7 +226,6 @@ nonisolated struct FeedFetcher: Sendable {
 
         let imageStore: ImageStore
         let discoverTabRoot: Page
-        /// The WWDC tab.
         let eventTabRoot: Page?
     }
 

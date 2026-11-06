@@ -55,3 +55,7 @@ struct VideoPlayerOverlay: View {
         #endif
     }
 }
+
+#Preview {
+    VideoPlayerOverlay(url: URL(string: ""), isReady: true, onPlay: {})
+}

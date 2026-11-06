@@ -14,7 +14,7 @@ nonisolated struct WWDCEvent: Identifiable, Hashable, Sendable {
         WWDCEvent(id: "wwdc\(year)", name: "WWDC\(String(year).suffix(2))", systemImage: "wwdc.badge")
     }
 
-    static let meetWithApple = WWDCEvent(id: "meet-with-apple", name: "Meet with Apple", systemImage: "lanyardcard.fill")
+    static let meetWithApple = WWDCEvent(id: "meet-with-apple", name: "Meet with Apple", systemImage: "wwdc.badge")
     static let techTalks = WWDCEvent(id: "tech-talks", name: "Tech Talks", systemImage: "rectangle.inset.filled.and.person.filled")
 
     var showsNewestFirst: Bool {

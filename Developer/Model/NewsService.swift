@@ -118,7 +118,7 @@ nonisolated struct NewsService: Sendable {
         }
         append(remaining)
 
-        // Trim whitespace at the block's edges.
+        // Trim whitespace.
         if let first = runs.first { runs[0].text = String(first.text.drop { $0 == " " }) }
         if let last = runs.last { runs[runs.count - 1].text = String(last.text.reversed().drop { $0 == " " }.reversed()) }
         return runs.filter { !$0.text.isEmpty }

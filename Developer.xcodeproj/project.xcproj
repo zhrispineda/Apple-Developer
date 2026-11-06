@@ -11,6 +11,7 @@
     ],
   },
   "files": [
+    { "path": "README.md", "target-membership": [ "Developer/resources" ] },
     { "kind": "folder", "path": "Developer", "target-membership": [ "Developer" ] },
     { "kind": "folder", "path": "DeveloperTests", "target-membership": [ "DeveloperTests" ] },
     { "kind": "folder", "path": "DeveloperUITests", "target-membership": [ "DeveloperUITests" ] },

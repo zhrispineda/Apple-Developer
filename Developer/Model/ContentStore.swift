@@ -146,6 +146,7 @@ final class ContentStore {
                         && (list.eventIDs?.contains(item.eventID) ?? true)
                         && (item.type == "Article" || item.videoURL != nil)
                 }
+                
                 // Lists drawn only from oldest-first events (WWDC, Meet with Apple)
                 // read in schedule order, e.g. Keynote first; the rest stay newest first.
                 let isAscending = list.eventIDs.map { !$0.isEmpty && $0.allSatisfy(ascendingEventIDs.contains) } ?? false
@@ -155,7 +156,7 @@ final class ContentStore {
         itemsByList = lists
     }
 
-    private static func scheduleOrder(_ lhs: ContentItem, _ rhs: ContentItem) -> Bool {
+    nonisolated private static func scheduleOrder(_ lhs: ContentItem, _ rhs: ContentItem) -> Bool {
         let lhsKey = (lhs.publishedAt ?? .distantFuture, lhs.startTime ?? .distantFuture, lhs.number)
         let rhsKey = (rhs.publishedAt ?? .distantFuture, rhs.startTime ?? .distantFuture, rhs.number)
         return lhsKey < rhsKey
