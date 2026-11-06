@@ -77,8 +77,11 @@ struct ContentView: View {
                 BrowseView()
             }
 
-            Tab("WWDC", systemImage: "lanyardcard", value: .wwdc) {
-                PlaceholderTabView(title: "WWDC", systemImage: "lanyardcard")
+            Tab("WWDC", image: "wwdc.badge", value: .wwdc) {
+                NavigationStack {
+                    ContentPageView(root: .wwdc)
+                        .navigationDestination(for: Route.self) { RouteView(route: $0) }
+                }
             }
 
             Tab("Account", systemImage: "person.crop.circle", value: .account) {

@@ -6,32 +6,37 @@
 import SwiftUI
 
 struct ContentPageView: View {
+    var root: RootPage = .discover
+
     @Environment(ContentStore.self) private var store
     @Environment(NewsStore.self) private var newsStore
 
     var body: some View {
+        let sections = store.sections(for: root)
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 28) {
-                ForEach(store.sections) { section in
+                ForEach(sections) { section in
                     switch section {
                     case .hero(let hero):
                         Ultrahero(hero: hero)
                             .padding(.horizontal, DiscoverMetrics.margin)
                     case .itemList(let list):
                         RowView(list: list)
+                    case .banners(let group):
+                        BannerSection(group: group)
                     }
                 }
             }
             .padding(.vertical)
         }
-        .navigationTitle("Discover")
+        .navigationTitle(root.title)
         .overlay {
-            if store.sections.isEmpty {
+            if sections.isEmpty {
                 if store.isLoading {
                     ProgressView()
                 } else if let errorMessage = store.errorMessage {
                     ContentUnavailableView {
-                        Label("Couldn't Load Discover", systemImage: "wifi.exclamationmark")
+                        Label("Couldn't Load \(root.title)", systemImage: "wifi.exclamationmark")
                     } description: {
                         Text(errorMessage)
                     } actions: {

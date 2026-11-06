@@ -26,7 +26,7 @@ final class ContentStore {
 
     private let service = FeedFetcher()
 
-    var sections: [DiscoverSection] { feed?.sections ?? [] }
+    func sections(for root: RootPage) -> [DiscoverSection] { feed?.sections(for: root) ?? [] }
 
     func item(withID id: String) -> ContentItem? { itemsByID[id] }
 
@@ -135,17 +135,29 @@ final class ContentStore {
             .sorted { ($0.publishedAt ?? .distantPast) > ($1.publishedAt ?? .distantPast) }
 
         var lists: [DiscoverItemList.ID: [ContentItem]] = [:]
-        for case .itemList(let list) in sections where !list.liveOnly {
+        let allSections = sections(for: .discover) + sections(for: .wwdc)
+        let ascendingEventIDs = feed?.ascendingEventIDs ?? []
+        for case .itemList(let list) in allSections where !list.liveOnly {
             if let ids = list.itemIDs {
                 lists[list.id] = ids.compactMap { itemsByID[$0] }
             } else {
-                lists[list.id] = published.filter { item in
+                let matches = published.filter { item in
                     (list.itemTypes?.contains(item.type) ?? true)
                         && (list.eventIDs?.contains(item.eventID) ?? true)
                         && (item.type == "Article" || item.videoURL != nil)
                 }
+                // Lists drawn only from oldest-first events (WWDC, Meet with Apple)
+                // read in schedule order, e.g. Keynote first; the rest stay newest first.
+                let isAscending = list.eventIDs.map { !$0.isEmpty && $0.allSatisfy(ascendingEventIDs.contains) } ?? false
+                lists[list.id] = isAscending ? matches.sorted(by: Self.scheduleOrder) : matches
             }
         }
         itemsByList = lists
+    }
+
+    private static func scheduleOrder(_ lhs: ContentItem, _ rhs: ContentItem) -> Bool {
+        let lhsKey = (lhs.publishedAt ?? .distantFuture, lhs.startTime ?? .distantFuture, lhs.number)
+        let rhsKey = (rhs.publishedAt ?? .distantFuture, rhs.startTime ?? .distantFuture, rhs.number)
+        return lhsKey < rhsKey
     }
 }

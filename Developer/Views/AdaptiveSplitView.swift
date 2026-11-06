@@ -21,11 +21,7 @@ struct AdaptiveSplitView: View {
 
     @Environment(SessionStore.self) private var store
     @Environment(WatchProgressStore.self) private var progressStore
-    #if os(macOS)
     @State private var history = BrowserNavigationState(current: Location(selection: .discover))
-    #else
-    @State private var history = BrowserNavigationState(current: Location(selection: .event(.techTalks)))
-    #endif
     private var location: Location { history.current }
     @AppStorage("sidebarBrowseExpanded") private var browseExpanded = true
     @AppStorage("sidebarTopicsExpanded") private var topicsExpanded = true
@@ -43,7 +39,6 @@ struct AdaptiveSplitView: View {
                     #endif
                     .navigationDestination(for: Route.self) { route in
                         RouteView(route: route)
-                            // The back/forward buttons replace the system one.
                             .navigationBarBackButtonHidden()
                             #if os(iOS)
                             .toolbar { historyButtons }
@@ -156,7 +151,7 @@ struct AdaptiveSplitView: View {
         case .discover:
             ContentPageView()
         case .wwdc:
-            PlaceholderListView(title: "WWDC", message: "Coming soon.", systemImage: "lanyardcard")
+            ContentPageView(root: .wwdc)
         case .news:
             NewsListView()
         case .bookmarks:
@@ -175,4 +170,19 @@ struct AdaptiveSplitView: View {
             ContentUnavailableView("Select an Item", systemImage: "sidebar.left")
         }
     }
+}
+
+#Preview {
+    @Previewable @State var store = SessionStore()
+
+    AdaptiveSplitView()
+        .asyncImageURLSession(WWDCCache.imageSession)
+        .environment(store)
+        .environment(WatchProgressStore())
+        .environment(SynchronizedListManager())
+        .environment(NewsStore())
+        .environment(ContentStore())
+        .environment(DownloadEngine())
+        .environment(CloudSyncMonitor())
+        .task { await store.load() }
 }

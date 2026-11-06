@@ -38,6 +38,11 @@ struct Ultrahero: View {
                 artwork.aspectRatio(hero.aspectRatio, contentMode: .fit)
             }
             VStack(alignment: .leading, spacing: 8) {
+                if let eyebrow = hero.eyebrow, !eyebrow.isEmpty {
+                    Text(eyebrow)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.black.opacity(0.65))
+                }
                 Text(hero.title)
                     .font(.title.bold())
                     .foregroundStyle(.black)

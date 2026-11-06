@@ -26,11 +26,11 @@ nonisolated struct FeedFetcher: Sendable {
 
         var feed = cached ?? DiscoverFeed(items: [], sections: [], fetchedAt: .now)
         if let data = contentsResult.data {
-            (feed.items, feed.resources) = try Self.parseContents(data)
+            (feed.items, feed.resources, feed.ascendingEventIDs) = try Self.parseContents(data)
             feed.contentsETag = contentsResult.etag
         }
         if let data = pageResult.data {
-            feed.sections = try Self.parseDiscoverPage(data)
+            (feed.sections, feed.wwdcSections) = try Self.parseRootPages(data)
             feed.pages = try Self.parseArticles(data)
             feed.pageETag = pageResult.etag
         }
@@ -64,6 +64,7 @@ nonisolated struct FeedFetcher: Sendable {
             let id: String
             let name: String
             let imagesPath: String?
+            let sortOrder: String?
         }
         
         struct Topic: Decodable {
@@ -109,7 +110,7 @@ nonisolated struct FeedFetcher: Sendable {
         let resources: [Resource]?
     }
 
-    static func parseContents(_ data: Data) throws -> (items: [ContentItem], resources: [Int: ContentResource]) {
+    static func parseContents(_ data: Data) throws -> (items: [ContentItem], resources: [Int: ContentResource], ascendingEventIDs: Set<String>) {
         let raw = try JSONDecoder().decode(RawContents.self, from: data)
         let resources = Dictionary(
             (raw.resources ?? []).map {
@@ -150,7 +151,8 @@ nonisolated struct FeedFetcher: Sendable {
                 articleID: content.articleID
             )
         }
-        return (items, resources)
+        let ascendingEventIDs = Set(raw.events.filter { $0.sortOrder?.hasSuffix("Ascending") == true }.map(\.id))
+        return (items, resources, ascendingEventIDs)
     }
 
     private struct RawArticles: Decodable {
@@ -164,6 +166,9 @@ nonisolated struct FeedFetcher: Sendable {
             }
             
             struct Section: Decodable {
+                let id: String
+                let title: String?
+                let layoutStyle: String?
                 let components: [Component]?
             }
             
@@ -178,9 +183,17 @@ nonisolated struct FeedFetcher: Sendable {
                 }
                 
                 let image: Image?
+                let eyebrowText: String?
                 let titleText: String?
                 let bodyText: String?
                 let contentItemID: String?
+            }
+
+            struct Banner: Decodable {
+                let header: String?
+                let body: String?
+                let image: Ultrahero.Image?
+                let activityID: String?
             }
             
             struct ItemList: Decodable {
@@ -208,45 +221,78 @@ nonisolated struct FeedFetcher: Sendable {
             let type: String
             let ultrahero: Ultrahero?
             let itemList: ItemList?
+            let banner: Banner?
         }
-        
+
         let imageStore: ImageStore
         let discoverTabRoot: Page
+        /// The WWDC tab.
+        let eventTabRoot: Page?
     }
 
     private static let liveNowFilterOption = 16
 
-    static func parseDiscoverPage(_ data: Data) throws -> [DiscoverSection] {
+    static func parseRootPages(_ data: Data) throws -> (discover: [DiscoverSection], wwdc: [DiscoverSection]) {
         let raw = try JSONDecoder().decode(RawArticles.self, from: data)
-        let localizations = raw.discoverTabRoot.localizations
-        guard let page = localizations["eng"] ?? localizations.values.first else { return [] }
+        return (
+            sections(of: raw.discoverTabRoot, imageStore: raw.imageStore.path),
+            raw.eventTabRoot.map { sections(of: $0, imageStore: raw.imageStore.path) } ?? []
+        )
+    }
 
-        return page.sections.flatMap { $0.components ?? [] }.compactMap { component in
-            switch component.type {
-            case "ultrahero":
-                guard let hero = component.ultrahero, let title = hero.titleText else { return nil }
-                return .hero(DiscoverHero(
-                    title: cleanText(title),
-                    body: cleanText(hero.bodyText ?? ""),
-                    imageURL: hero.image.flatMap { URL(string: "\(raw.imageStore.path)/\($0.id)/2048.jpeg") },
-                    aspectRatio: hero.image?.aspectRatio ?? 16 / 9,
-                    itemID: hero.contentItemID
-                ))
-            case "itemList":
-                guard let list = component.itemList else { return nil }
-                return .itemList(DiscoverItemList(
+    private static func sections(of root: RawArticles.Page, imageStore: String) -> [DiscoverSection] {
+        guard let page = root.localizations["eng"] ?? root.localizations.values.first else { return [] }
+
+        return page.sections.flatMap { section -> [DiscoverSection] in
+            let components = section.components ?? []
+            let banners = components.compactMap { component -> DiscoverBanner? in
+                guard component.type == "banner", let banner = component.banner, let header = banner.header else { return nil }
+                return DiscoverBanner(
                     id: component.id,
-                    title: list.title,
-                    layout: list.summaryLayout == "wideCard" ? .wideCard : .card,
-                    itemTypes: list.filter?.itemTypes,
-                    eventIDs: list.filter?.projectIDs,
-                    liveOnly: (list.filter?.options ?? 0) & liveNowFilterOption != 0,
-                    itemIDs: list.summaryContent?.predefined?.itemIDs,
-                    showsSeeAll: list.summaryAlwaysShowsSeeAllButton ?? false
-                ))
-            default:
-                return nil
+                    header: cleanText(header),
+                    body: cleanText(banner.body ?? ""),
+                    imageURL: banner.image.flatMap { URL(string: "\(imageStore)/\($0.id)/256.jpeg") },
+                    itemID: banner.activityID
+                )
             }
+            let others = components.compactMap { discoverSection(for: $0, imageStore: imageStore) }
+            guard !banners.isEmpty else { return others }
+            let group = DiscoverBannerGroup(
+                id: section.id,
+                title: section.title.map(cleanText),
+                layout: section.layoutStyle == "grid" ? .grid : .stack,
+                banners: banners
+            )
+            return [.banners(group)] + others
+        }
+    }
+
+    private static func discoverSection(for component: RawArticles.Component, imageStore: String) -> DiscoverSection? {
+        switch component.type {
+        case "ultrahero":
+            guard let hero = component.ultrahero, let title = hero.titleText else { return nil }
+            return .hero(DiscoverHero(
+                title: cleanText(title),
+                body: cleanText(hero.bodyText ?? ""),
+                imageURL: hero.image.flatMap { URL(string: "\(imageStore)/\($0.id)/2048.jpeg") },
+                aspectRatio: hero.image?.aspectRatio ?? 16 / 9,
+                itemID: hero.contentItemID,
+                eyebrow: hero.eyebrowText.map(cleanText)
+            ))
+        case "itemList":
+            guard let list = component.itemList else { return nil }
+            return .itemList(DiscoverItemList(
+                id: component.id,
+                title: list.title,
+                layout: list.summaryLayout == "wideCard" ? .wideCard : .card,
+                itemTypes: list.filter?.itemTypes,
+                eventIDs: list.filter?.projectIDs,
+                liveOnly: (list.filter?.options ?? 0) & liveNowFilterOption != 0,
+                itemIDs: list.summaryContent?.predefined?.itemIDs,
+                showsSeeAll: list.summaryAlwaysShowsSeeAllButton ?? false
+            ))
+        default:
+            return nil
         }
     }
 
