@@ -54,6 +54,10 @@ struct WWDCSession: Identifiable, Hashable, Codable, Sendable {
         return URL(string: large) ?? thumbnailURL
     }
 
+    var isDownloadable: Bool {
+        !(eventID.hasPrefix("wwdc") && title == "Keynote")
+    }
+
     var eventName: String {
         WWDCEvent.event(withID: eventID)?.name ?? eventID
     }

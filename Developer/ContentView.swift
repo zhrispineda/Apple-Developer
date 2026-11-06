@@ -82,20 +82,12 @@ struct ContentView: View {
             }
 
             Tab("Account", systemImage: "person.crop.circle", value: .account) {
-                AccountView()
+                EmptyView()
             }
 
             Tab(value: .search, role: .search) {
                 SearchView()
             }
-        }
-    }
-}
-
-struct AccountView: View {
-    var body: some View {
-        NavigationStack {
-            AccountList()
         }
     }
 }

@@ -50,12 +50,11 @@ nonisolated struct WWDCVideoService: Sendable {
     }
     
     static func parseDetails(from html: String) -> WWDCSessionDetails {
-        let hls = html.firstMatch(of: /https:\/\/devstreaming-cdn\.apple\.com\/[^"'\s]+\.m3u8/)
+        let hls = html.firstMatch(of: /https:\/\/(?:devstreaming-cdn|events-delivery)\.apple\.com\/[^"'\s]+\.m3u8/)
         let download = html.firstMatch(of: /https:\/\/devstreaming-cdn\.apple\.com\/[^"'\s?]+_hd[^"'\s?]*\.(?:mp4|mov)/)
         let videoURL = (hls ?? download).flatMap { URL(string: String($0.0)) }
         let downloadURL = download.flatMap { URL(string: String($0.0)) }
 
-        // The description is the first paragraph inside the "details" supplement.
         let summary = html.firstMatch(of: /data-supplement-id="details".*?<p>(.*?)<\/p>/.dotMatchesNewlines())
             .map { decodeEntities(String($0.1)).trimmingCharacters(in: .whitespacesAndNewlines) }
             .flatMap { $0.isEmpty ? nil : $0 }

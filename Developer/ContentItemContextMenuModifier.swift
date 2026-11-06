@@ -48,19 +48,20 @@ struct ContentItemContextMenu: View {
                 }
             }
 
-            switch downloadStore.state(for: session.id) {
-            case .notDownloaded:
-                Button("Download", systemImage: "arrow.down") {
-                    downloadStore.download(session)
-                }
-            case .downloading:
-                Button("Stop Download", systemImage: "stop.circle") {
-                    downloadStore.cancel(session.id)
-                }
-            case .downloaded:
-                // A menu can't host the confirmation, and choosing Remove is already deliberate.
-                Button("Remove Download", systemImage: "trash", role: .destructive) {
-                    downloadStore.remove(session.id)
+            if session.isDownloadable {
+                switch downloadStore.state(for: session.id) {
+                case .notDownloaded:
+                    Button("Download", systemImage: "arrow.down") {
+                        downloadStore.download(session)
+                    }
+                case .downloading:
+                    Button("Stop Download", systemImage: "stop.circle") {
+                        downloadStore.cancel(session.id)
+                    }
+                case .downloaded:
+                    Button("Remove Download", systemImage: "trash", role: .destructive) {
+                        downloadStore.remove(session.id)
+                    }
                 }
             }
         }

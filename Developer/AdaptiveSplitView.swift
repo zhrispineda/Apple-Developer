@@ -11,7 +11,7 @@ struct AdaptiveSplitView: View {
         case news, bookmarks, downloaded, continueWatching
         case topic(WWDCTopic)
         case event(WWDCEvent)
-        case account, diagnostics
+        case diagnostics
     }
     
     struct Location: Hashable {
@@ -135,39 +135,10 @@ struct AdaptiveSplitView: View {
                 Label("Settings", systemImage: "gearshape").tag(SidebarItem.diagnostics)
             }
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            accountFooter
-        }
     }
 
     private var hasVideosInProgress: Bool {
         !store.sessions(orderedByIDs: progressStore.inProgressSessionIDs).isEmpty
-    }
-
-    private var accountFooter: some View {
-        Button {
-            selectionBinding.wrappedValue = .account
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.largeTitle)
-                    .foregroundStyle(.secondary)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Apple Account")
-                        .font(.headline)
-                    Text("Sign In")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .contentShape(.rect)
-        }
-        .buttonStyle(.plain)
-        .background(.bar)
-        .overlay(alignment: .top) { Divider() }
     }
 
     // MARK: Detail
@@ -193,8 +164,6 @@ struct AdaptiveSplitView: View {
             TopicContentView(topic: topic)
         case .event(let event):
             FilteredContentView(title: event.name, sessions: store.sessions(in: event), shareURL: event.pageURL, shareLabel: "Share Event…")
-        case .account:
-            AccountList()
         case .diagnostics:
             DiagnosticsView()
         case nil:
