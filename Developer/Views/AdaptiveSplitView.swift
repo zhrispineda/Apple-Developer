@@ -5,31 +5,27 @@
 
 import SwiftUI
 
+enum SidebarItem: Hashable {
+    case search, discover, wwdc
+    case news, bookmarks, downloaded, continueWatching
+    case topic(WWDCTopic)
+    case event(WWDCEvent)
+    case diagnostics
+}
+
 struct AdaptiveSplitView: View {
-    enum SidebarItem: Hashable {
-        case search, discover, wwdc
-        case news, bookmarks, downloaded, continueWatching
-        case topic(WWDCTopic)
-        case event(WWDCEvent)
-        case diagnostics
-    }
+    @Environment(SessionStore.self) private var store
+    @State private var history = BrowserNavigationState(current: Location(selection: .discover))
+    private var location: Location { history.current }
     
     struct Location: Hashable {
         var selection: SidebarItem?
         var path: [Route] = []
     }
 
-    @Environment(SessionStore.self) private var store
-    @Environment(WatchProgressStore.self) private var progressStore
-    @State private var history = BrowserNavigationState(current: Location(selection: .discover))
-    private var location: Location { history.current }
-    @AppStorage("sidebarBrowseExpanded") private var browseExpanded = true
-    @AppStorage("sidebarTopicsExpanded") private var topicsExpanded = true
-    @AppStorage("sidebarEventsExpanded") private var eventsExpanded = true
-
     var body: some View {
         NavigationSplitView {
-            sidebar
+            SidebarView(selectionBinding: selectionBinding)
                 .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 340)
         } detail: {
             NavigationStack(path: pathBinding) {
@@ -90,10 +86,50 @@ struct AdaptiveSplitView: View {
         }
     }
 
-    // MARK: Sidebar
+    // MARK: Detail
 
-    private var sidebar: some View {
-        List(selection: selectionBinding) {
+    @ViewBuilder
+    private var detailRoot: some View {
+        switch location.selection {
+        case .search:
+            SearchView(embedsInNavigationStack: false)
+        case .discover:
+            ContentPageView()
+        case .wwdc:
+            ContentPageView(root: .wwdc)
+        case .news:
+            NewsListView()
+        case .bookmarks:
+            BookmarksView()
+        case .downloaded:
+            DownloadedView()
+        case .continueWatching:
+            ContinueWatchingView()
+        case .topic(let topic):
+            TopicContentView(topic: topic)
+        case .event(let event):
+            FilteredContentView(title: event.name, sessions: store.sessions(in: event), shareURL: event.pageURL, shareLabel: "Share Event…")
+        case .diagnostics:
+            DiagnosticsView()
+        case nil:
+            ContentUnavailableView("Select an Item", systemImage: "sidebar.left")
+        }
+    }
+}
+
+struct SidebarView: View {
+    @AppStorage("sidebarBrowseExpanded") private var browseExpanded = true
+    @AppStorage("sidebarTopicsExpanded") private var topicsExpanded = true
+    @AppStorage("sidebarEventsExpanded") private var eventsExpanded = true
+    @Environment(SessionStore.self) private var store
+    @Environment(WatchProgressStore.self) private var progressStore
+    @Binding var selectionBinding: SidebarItem?
+    private var hasVideosInProgress: Bool {
+        !store.sessions(orderedByIDs: progressStore.inProgressSessionIDs).isEmpty
+    }
+    
+    var body: some View {
+        List(selection: $selectionBinding) {
             Section {
                 Label("Search", systemImage: "magnifyingglass").tag(SidebarItem.search)
                 Label("Discover", systemImage: "star").tag(SidebarItem.discover)
@@ -134,40 +170,6 @@ struct AdaptiveSplitView: View {
             Section("Debug") {
                 Label("Settings", systemImage: "gearshape").tag(SidebarItem.diagnostics)
             }
-        }
-    }
-
-    private var hasVideosInProgress: Bool {
-        !store.sessions(orderedByIDs: progressStore.inProgressSessionIDs).isEmpty
-    }
-
-    // MARK: Detail
-
-    @ViewBuilder
-    private var detailRoot: some View {
-        switch location.selection {
-        case .search:
-            SearchView(embedsInNavigationStack: false)
-        case .discover:
-            ContentPageView()
-        case .wwdc:
-            ContentPageView(root: .wwdc)
-        case .news:
-            NewsListView()
-        case .bookmarks:
-            BookmarksView()
-        case .downloaded:
-            DownloadedView()
-        case .continueWatching:
-            ContinueWatchingView()
-        case .topic(let topic):
-            TopicContentView(topic: topic)
-        case .event(let event):
-            FilteredContentView(title: event.name, sessions: store.sessions(in: event), shareURL: event.pageURL, shareLabel: "Share Event…")
-        case .diagnostics:
-            DiagnosticsView()
-        case nil:
-            ContentUnavailableView("Select an Item", systemImage: "sidebar.left")
         }
     }
 }
