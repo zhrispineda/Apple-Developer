@@ -15,20 +15,24 @@ struct PreferredTopics {
     static func encode(_ topics: Set<String>) -> String {
         topics.sorted().joined(separator: "\n")
     }
+
+    static func binding(for topic: WWDCTopic, in storage: Binding<String>) -> Binding<Bool> {
+        Binding {
+            decode(storage.wrappedValue).contains(topic.name)
+        } set: { isOn in
+            var topics = decode(storage.wrappedValue)
+            if isOn { topics.insert(topic.name) } else { topics.remove(topic.name) }
+            storage.wrappedValue = encode(topics)
+        }
+    }
 }
 
 struct PreferredTopicsSettingsView: View {
-    @Environment(SessionStore.self) private var store
     @Environment(\.dismiss) private var dismiss
-    @AppStorage(PreferredTopics.storageKey) private var preferredTopicsStorage = ""
 
     var body: some View {
         NavigationStack {
-            List(store.topics) { topic in
-                Toggle(isOn: binding(for: topic)) {
-                    Label(topic.name, systemImage: topic.systemImage)
-                }
-            }
+            PreferredTopicsList()
             .navigationTitle("Preferred Topics")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -40,14 +44,17 @@ struct PreferredTopicsSettingsView: View {
         .frame(minWidth: 360, minHeight: 440)
         #endif
     }
+}
 
-    private func binding(for topic: WWDCTopic) -> Binding<Bool> {
-        Binding {
-            PreferredTopics.decode(preferredTopicsStorage).contains(topic.name)
-        } set: { isOn in
-            var topics = PreferredTopics.decode(preferredTopicsStorage)
-            if isOn { topics.insert(topic.name) } else { topics.remove(topic.name) }
-            preferredTopicsStorage = PreferredTopics.encode(topics)
+struct PreferredTopicsList: View {
+    @Environment(SessionStore.self) private var store
+    @AppStorage(PreferredTopics.storageKey) private var preferredTopicsStorage = ""
+
+    var body: some View {
+        List(store.topics) { topic in
+            Toggle(isOn: PreferredTopics.binding(for: topic, in: $preferredTopicsStorage)) {
+                Label(topic.name, systemImage: topic.systemImage)
+            }
         }
     }
 }

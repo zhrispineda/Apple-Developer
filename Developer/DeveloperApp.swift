@@ -8,6 +8,9 @@ import AVFoundation
 
 @main
 struct DeveloperApp: App {
+    /// Shared between the main window and the Settings window.
+    @State private var sessionStore = SessionStore()
+
     init() {
         #if !os(macOS)
         do {
@@ -21,10 +24,18 @@ struct DeveloperApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(sessionStore)
         }
         #if !os(macOS)
         .backgroundTask(.urlSession(DownloadEngine.backgroundSessionIdentifier)) {
             await DownloadEngine.shared.handleBackgroundEvents()
+        }
+        #endif
+        
+        #if os(macOS)
+        Settings {
+            SettingsView()
+                .environment(sessionStore)
         }
         #endif
     }

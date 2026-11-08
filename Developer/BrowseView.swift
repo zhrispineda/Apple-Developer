@@ -10,6 +10,7 @@ enum BrowseDestination: Hashable {
     case topic(WWDCTopic)
 }
 
+/// Browse tab view for iOS.
 struct BrowseView: View {
     @Environment(SessionStore.self) private var store
     @Environment(WatchProgressStore.self) private var progressStore
@@ -50,9 +51,9 @@ struct BrowseView: View {
                 }
 
                 Section {
-                    browseRow("Settings", systemImage: "gearshape", value: BrowseDestination.diagnostics)
+                    browseRow("Debug", systemImage: "gearshape", value: BrowseDestination.diagnostics)
                 } header: {
-                    sectionHeader("Debug")
+                    sectionHeader("Internal")
                 }
             }
             .listStyle(.plain)
@@ -81,7 +82,6 @@ struct BrowseView: View {
                     }
                 }
             }
-            .refreshable { await store.load() }
         }
     }
 
@@ -167,20 +167,6 @@ struct ContinueWatchingView: View {
                     )
                 }
             }
-    }
-}
-
-struct PlaceholderListView: View {
-    let title: String
-    let message: String
-    let systemImage: String
-
-    var body: some View {
-        ContentUnavailableView(title, systemImage: systemImage, description: Text(message))
-            .navigationTitle(title)
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
     }
 }
 

@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var store = SessionStore()
+    @Environment(SessionStore.self) private var store
     @State private var progressStore = WatchProgressStore(cloud: NSUbiquitousKeyValueStore.default)
     @State private var bookmarkStore = SynchronizedListManager(cloud: NSUbiquitousKeyValueStore.default)
     @State private var newsStore = NewsStore()
@@ -39,7 +39,6 @@ struct ContentView: View {
         }
         .asyncImageURLSession(WWDCCache.imageSession)
         .downloadErrorAlert()
-        .environment(store)
         .environment(progressStore)
         .environment(bookmarkStore)
         .environment(newsStore)
@@ -109,4 +108,5 @@ struct PlaceholderTabView: View {
 
 #Preview {
     ContentView()
+        .environment(SessionStore())
 }

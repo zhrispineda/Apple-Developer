@@ -41,27 +41,52 @@ struct Ultrahero: View {
                 if let eyebrow = hero.eyebrow, !eyebrow.isEmpty {
                     Text(eyebrow)
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.black.opacity(0.65))
+                        .foregroundStyle(.white.opacity(0.65))
                 }
                 Text(hero.title)
                     .font(.title.bold())
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
                 Text(hero.body)
                     .font(.title3)
-                    .foregroundStyle(.black.opacity(0.65))
+                    .foregroundStyle(.white.opacity(0.7))
             }
             .multilineTextAlignment(.leading)
             .padding(24)
             .frame(maxWidth: .infinity, maxHeight: isStacked ? nil : .infinity, alignment: .leading)
-            .background(
-                LinearGradient(colors: [Color(white: 0.8), Color(white: 0.6)], startPoint: .topLeading, endPoint: .bottomTrailing)
-            )
+            .background { glow }
             if !isStacked { artwork }
         }
         .frame(maxWidth: .infinity)
         .background(.black)
         .clipShape(.rect(cornerRadius: 16))
         .contentShape(.rect)
+    }
+
+    private var glow: some View {
+        Color(white: 0.12)
+            .overlay {
+                if let url = hero.imageURL {
+                    AsyncImage(request: URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)) { image in
+                        image.resizable()
+                            .scaledToFill()
+                            .scaleEffect(1.5)
+                            .blur(radius: 90, opaque: true)
+                            .saturation(1.3)
+                            .opacity(0.6)
+                    } placeholder: {
+                        Color.clear
+                    }
+                }
+            }
+            .overlay {
+                RadialGradient(
+                    colors: [.clear, .black.opacity(0.7)],
+                    center: UnitPoint(x: 0.4, y: 0.25),
+                    startRadius: 0,
+                    endRadius: 500
+                )
+            }
+            .clipped()
     }
 
     private var artwork: some View {
