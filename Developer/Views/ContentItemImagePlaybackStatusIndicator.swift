@@ -40,3 +40,33 @@ struct ContentItemImagePlaybackStatusIndicator: View {
         return ("play.fill", formattedMinutes(duration), false)
     }
 }
+
+#Preview {
+    let session = WWDCSession(
+        id: "wwdc2025-10001",
+        eventID: "wwdc2025",
+        sessionNumber: 10001,
+        title: "What's new in SwiftUI",
+        topics: ["SwiftUI & UI Frameworks"],
+        duration: "24:37",
+        thumbnailURL: nil,
+        url: URL(string: "https://developer.apple.com/videos/play/wwdc2025/10001/")!
+    )
+
+    VStack(spacing: 12) {
+        // Not started: shows the session's full duration.
+        ContentItemImagePlaybackStatusIndicator(session: session, progress: nil)
+        // In progress: shows time remaining.
+        ContentItemImagePlaybackStatusIndicator(
+            session: session,
+            progress: WatchProgress(position: 600, duration: 1477, isWatched: false, updatedAt: .now)
+        )
+        // Watched: inverted style with a checkmark.
+        ContentItemImagePlaybackStatusIndicator(
+            session: session,
+            progress: WatchProgress(position: 1477, duration: 1477, isWatched: true, updatedAt: .now)
+        )
+    }
+    .padding()
+    .background(.gray)
+}

@@ -15,7 +15,7 @@ enum SettingsKey {
     static let notifiesAboutWWDC = "notifiesAboutWWDC"
     static let notifiesAboutTechTalks = "notifiesAboutTechTalks"
 }
-
+#if os(macOS)
 struct SettingsView: View {
     var body: some View {
         TabView {
@@ -118,3 +118,4 @@ private extension View {
     SettingsView()
         .environment(SessionStore())
 }
+#endif

@@ -86,7 +86,6 @@ struct ArticleContextMenu: View {
     }
 }
 
-/// Adds or removes a session or article from Bookmarks.
 struct BookmarkMenuButton: View {
     let id: String
 
@@ -105,11 +104,64 @@ struct BookmarkMenuButton: View {
     }
 }
 
-private func copyLink(_ url: URL) {
+func copyLink(_ url: URL) {
     #if canImport(UIKit)
     UIPasteboard.general.url = url
     #elseif canImport(AppKit)
     NSPasteboard.general.clearContents()
     NSPasteboard.general.setString(url.absoluteString, forType: .string)
     #endif
+}
+
+#Preview("ContentItemContextMenu") {
+    VStack(alignment: .leading) {
+        ContentItemContextMenu(session: WWDCSession(
+            id: "wwdc2014-605",
+            eventID: "wwdc2014",
+            sessionNumber: 605,
+            title: "Working with Metal: Advanced",
+            topics: ["Graphics & Games"],
+            duration: "53:52",
+            thumbnailURL: nil,
+            url: URL(string: "https://developer.apple.com/videos/play/wwdc2014/605/")!
+        ))
+    }
+    .padding()
+    .environment(WatchProgressStore())
+    .environment(DownloadEngine())
+    .environment(SynchronizedListManager())
+}
+
+#Preview("ArticleContextMenu") {
+    VStack(alignment: .leading) {
+        ArticleContextMenu(item: ContentItem(
+            id: "preview-article",
+            eventID: "",
+            eventName: "",
+            number: 0,
+            type: "Article",
+            title: "Say hello to Touch on Mac",
+            summary: "",
+            webURL: URL(string: "https://developer.apple.com/news/")!,
+            startTime: nil,
+            endTime: nil,
+            publishedAt: nil,
+            duration: nil,
+            videoURL: nil,
+            hasLiveStream: false,
+            topics: [],
+            thumbnailURL: nil,
+            cardImageURL: nil,
+            posterURL: nil,
+            squareImageURL: nil
+        ))
+    }
+    .padding()
+    .environment(SynchronizedListManager())
+}
+
+#Preview("BookmarkMenuButton") {
+    BookmarkMenuButton(id: "wwdc2014-605")
+        .padding()
+        .environment(SynchronizedListManager())
 }

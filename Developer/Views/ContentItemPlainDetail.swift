@@ -49,8 +49,8 @@ struct ContentItemPlainDetail: View {
             ToolbarItem(placement: .primaryAction) {
                 Menu {
                     ShareLink(item: item.webURL)
-                    Link(destination: item.webURL) {
-                        Label("View on developer.apple.com", systemImage: "safari")
+                    Button("Copy Link", systemImage: "link") {
+                        copyLink(item.webURL)
                     }
                 } label: {
                     Label("More", systemImage: "ellipsis")

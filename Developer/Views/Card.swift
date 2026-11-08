@@ -28,3 +28,7 @@ struct Card: View {
         .background(.quaternary.opacity(0.5), in: .rect(cornerRadius: 16))
     }
 }
+
+#Preview {
+    Card(title: "Title", message: "Message", buttonTitle: nil, url: nil)
+}

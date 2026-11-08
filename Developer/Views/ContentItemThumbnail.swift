@@ -38,3 +38,14 @@ struct ContentItemThumbnail: View {
         }
     }
 }
+
+#Preview("Thumbnail") {
+    HStack(spacing: 16) {
+        ContentItemThumbnail(
+            url: URL(string: "https://devimages-cdn.apple.com/wwdc-services/articles/images/4310983B-86A3-4D1D-A9C3-1292AFFCAB35/2048.jpeg"),
+            width: 160
+        )
+        ContentItemThumbnail(url: nil, width: 160)
+    }
+    .padding()
+}

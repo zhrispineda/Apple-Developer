@@ -133,3 +133,40 @@ struct ContentItemWideRow: View {
         }
     }
 }
+
+#Preview("Row") {
+    List {
+        ContentItemRow(session: WWDCSession(
+            id: "wwdc2014-605",
+            eventID: "wwdc2014",
+            sessionNumber: 605,
+            title: "Working with Metal: Advanced",
+            topics: ["Graphics & Games"],
+            duration: "53:52",
+            thumbnailURL: nil,
+            url: URL(string: "https://developer.apple.com/videos/play/wwdc2014/605/")!
+        ))
+    }
+    .environment(WatchProgressStore())
+    .environment(DownloadEngine())
+}
+
+#Preview("Wide row") {
+    List {
+        ContentItemWideRow(session: WWDCSession(
+            id: "wwdc2014-605",
+            eventID: "wwdc2014",
+            sessionNumber: 605,
+            title: "Working with Metal: Advanced",
+            topics: ["Graphics & Games"],
+            duration: "53:52",
+            thumbnailURL: nil,
+            url: URL(string: "https://developer.apple.com/videos/play/wwdc2014/605/")!
+        ))
+    }
+    .environment(WatchProgressStore())
+    .environment(DownloadEngine())
+    #if os(macOS)
+    .frame(width: 700, height: 200)
+    #endif
+}

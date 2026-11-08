@@ -48,3 +48,18 @@ struct ContentItemPlayer: UIViewControllerRepresentable {
     }
 }
 #endif
+
+private extension URL {
+    static let previewStream = URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevc/master.m3u8")!
+}
+
+#Preview("AVPlayerView") {
+    ContentItemPlayer(player: AVPlayer(url: .previewStream))
+        .aspectRatio(16 / 9, contentMode: .fit)
+        .frame(width: 640)
+}
+
+#Preview("AVPlayerViewController") {
+    ContentItemPlayer(player: AVPlayer(url: .previewStream))
+        .aspectRatio(16 / 9, contentMode: .fit)
+}
