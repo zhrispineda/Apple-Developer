@@ -36,3 +36,20 @@ struct FilteredContentGridCell: View {
         .contentShape(.rect)
     }
 }
+
+#Preview {
+    let session = WWDCSession(
+        id: "wwdc2025-10001",
+        eventID: "wwdc2025",
+        sessionNumber: 10001,
+        title: "What's new in H",
+        topics: ["SwiftUI & UI Frameworks"],
+        duration: "24:37",
+        thumbnailURL: nil,
+        url: URL(string: "https://developer.apple.com/videos/play/wwdc2025/10001/")!
+    )
+
+    FilteredContentGridCell(entry: .video(session), width: 250)
+        .padding()
+        .environment(WatchProgressStore())
+}

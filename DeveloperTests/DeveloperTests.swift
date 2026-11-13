@@ -46,6 +46,7 @@ struct CloudStorageCapacityTests {
             let duration = (session.durationSeconds ?? 3600) + 0.123456789
             store.update(sessionID: session.id, position: duration / 3 + 0.987654321, duration: duration)
         }
+        store.syncToCloud()
 
         #expect(cloud.rejectedWrites.isEmpty, "iCloud rejected writes: \(cloud.rejectedWrites)")
         #expect(cloud.watchProgress()?.count == catalog.count)
@@ -65,6 +66,7 @@ struct CloudStorageCapacityTests {
             progress.update(sessionID: session.id, position: duration / 3 + 0.987654321, duration: duration)
             bookmarks.toggle(session.id)
         }
+        progress.syncToCloud()
 
         #expect(cloud.rejectedWrites.isEmpty, "iCloud rejected writes: \(cloud.rejectedWrites)")
         #expect(bookmarks.bookmarkedIDs.count == catalog.count)

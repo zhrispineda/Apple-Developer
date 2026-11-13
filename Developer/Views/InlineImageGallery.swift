@@ -28,3 +28,29 @@ struct InlineImageGallery: View {
         .scrollIndicators(.hidden)
     }
 }
+
+#Preview {
+    let baseURL = URL(string: "https://devimages-cdn.apple.com/wwdc-services/articles/images/4310983B-86A3-4D1D-A9C3-1292AFFCAB35")!
+
+    InlineImageGallery(images: [
+        MediaResource(
+            baseURL: baseURL,
+            aspectRatio: 16 / 9,
+            caption: "A caption with **bold** text.",
+            accessibilityDescription: "Preview image"
+        ),
+        MediaResource(
+            baseURL: baseURL.appending(path: "square"),
+            aspectRatio: 1,
+            caption: "",
+            accessibilityDescription: nil
+        ),
+        MediaResource(
+            baseURL: baseURL.appending(path: "portrait"),
+            aspectRatio: 3 / 4,
+            caption: "A longer caption that wraps across multiple lines beneath a portrait image.",
+            accessibilityDescription: nil
+        )
+    ])
+    .padding()
+}

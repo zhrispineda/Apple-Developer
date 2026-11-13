@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct WatchProgress: Codable, Sendable {
+struct WatchProgress: Codable, Equatable, Sendable {
     var position: Double
     var duration: Double
     var isWatched: Bool
@@ -19,9 +19,12 @@ final class WatchProgressStore {
     private(set) var progress: [String: WatchProgress] = [:]
     private static let watchedThreshold: Double = 30
     static let defaultsKey = "watchProgress"
+    private static let cloudWriteInterval: Duration = .seconds(30)
 
     private let defaults: UserDefaults
     private let cloud: CloudKeyValueStore?
+    private var lastCloudWrite: ContinuousClock.Instant?
+    private var pendingCloudWrite: Task<Void, Never>?
 
     init(defaults: UserDefaults = .standard, cloud: CloudKeyValueStore? = nil) {
         self.defaults = defaults
@@ -54,7 +57,13 @@ final class WatchProgressStore {
         progress[sessionID] = WatchProgress(
             position: position, duration: duration, isWatched: wasWatched || nearEnd, updatedAt: .now
         )
-        save()
+        save(throttled: !(nearEnd && !wasWatched))
+    }
+
+    /// Writes any throttled progress to iCloud immediately, e.g. when playback stops.
+    func syncToCloud() {
+        guard pendingCloudWrite != nil else { return }
+        writeToCloud()
     }
 
     func markWatched(sessionID: String, duration: Double) {
@@ -70,10 +79,35 @@ final class WatchProgressStore {
 
     // MARK: Persistence and iCloud sync
 
-    private func save() {
-        guard let data = try? JSONEncoder().encode(progress) else { return }
+    private func save(throttled: Bool = false) {
+        guard let data = Self.encode(progress) else { return }
         defaults.set(data, forKey: Self.defaultsKey)
-        cloud?.set(data, forKey: Self.defaultsKey)
+        guard cloud != nil else { return }
+
+        guard throttled, let lastCloudWrite else {
+            writeToCloud()
+            return
+        }
+        let elapsed = ContinuousClock.now - lastCloudWrite
+        if elapsed >= Self.cloudWriteInterval {
+            writeToCloud()
+        } else if pendingCloudWrite == nil {
+            // Coalesce updates within the interval into one trailing write.
+            pendingCloudWrite = Task { [weak self] in
+                try? await Task.sleep(for: Self.cloudWriteInterval - elapsed)
+                guard !Task.isCancelled else { return }
+                self?.writeToCloud()
+            }
+        }
+    }
+
+    private func writeToCloud() {
+        pendingCloudWrite?.cancel()
+        pendingCloudWrite = nil
+        lastCloudWrite = .now
+        guard let cloud, let data = Self.encode(progress) else { return }
+        guard cloud.data(forKey: Self.defaultsKey) != data else { return }
+        cloud.set(data, forKey: Self.defaultsKey)
     }
 
     private func mergeFromCloud() {
@@ -89,8 +123,12 @@ final class WatchProgressStore {
                 merged[id] = remoteEntry
             }
         }
-        progress = merged
-        save()
+        // Only write back when the merge changes
+        if merged != progress {
+            progress = merged
+            defaults.set(Self.encode(merged), forKey: Self.defaultsKey)
+        }
+        if merged != remote { writeToCloud() }
     }
 
     private func observeCloudChanges() {
@@ -106,6 +144,12 @@ final class WatchProgressStore {
                 self.mergeFromCloud()
             }
         }
+    }
+
+    private static func encode(_ progress: [String: WatchProgress]) -> Data? {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        return try? encoder.encode(progress)
     }
 
     private static func decode(_ data: Data?) -> [String: WatchProgress]? {

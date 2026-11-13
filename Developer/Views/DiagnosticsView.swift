@@ -258,6 +258,7 @@ struct StatusLabel: View {
     var body: some View {
         Label {
             Text(text)
+                .fixedSize()
         } icon: {
             Image(systemName: symbol)
                 .foregroundStyle(color)

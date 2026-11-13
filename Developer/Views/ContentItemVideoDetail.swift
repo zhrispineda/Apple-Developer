@@ -94,6 +94,7 @@ struct ContentItemVideoDetail: View {
         .onDisappear {
             player?.pause()
             saveProgress()
+            progressStore.syncToCloud()
         }
     }
 

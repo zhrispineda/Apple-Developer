@@ -73,5 +73,10 @@ private struct DownloadErrorAlert: ViewModifier {
 }
 
 #Preview {
-    DownloadedView()
+    NavigationStack {
+        DownloadedView()
+    }
+    .environment(DownloadEngine())
+    .environment(WatchProgressStore())
+    .environment(SynchronizedListManager())
 }
