@@ -57,3 +57,34 @@ struct TranscriptPane: View {
         }
     }
 }
+
+#Preview {
+    let clock = PlaybackClock()
+    clock.currentTime = 12
+    return TranscriptPane(
+        paragraphs: [
+            TranscriptParagraph(sentences: [
+                .init(start: 0, text: "Hello and welcome to WWDC."),
+                .init(start: 4, text: "Today we're going to talk about what's new in SwiftUI.")
+            ]),
+            TranscriptParagraph(sentences: [
+                .init(start: 10, text: "Let's start with a quick look at the transcript pane."),
+                .init(start: 14, text: "Tap any paragraph to jump to that point in the video.")
+            ]),
+            TranscriptParagraph(sentences: [
+                .init(start: 20, text: "The active sentence is highlighted as the video plays."),
+                .init(start: 25, text: "And the pane scrolls to keep it in view.")
+            ])
+        ],
+        clock: clock,
+        onSeek: { _ in }
+    )
+}
+
+#Preview("Empty") {
+    TranscriptPane(paragraphs: [], clock: PlaybackClock(), onSeek: { _ in })
+}
+
+#Preview("Loading") {
+    TranscriptPane(paragraphs: nil, clock: PlaybackClock(), onSeek: { _ in })
+}

@@ -22,3 +22,16 @@ struct TranscriptText: View {
         }
     }
 }
+
+#Preview {
+    TranscriptText(
+        paragraph: TranscriptParagraph(sentences: [
+            .init(start: 0, text: "Hello and welcome to WWDC."),
+            .init(start: 4, text: "Today we're going to talk about what's new in SwiftUI."),
+            .init(start: 9, text: "Let's get started.")
+        ]),
+        activeSentenceStart: 4
+    )
+    .frame(width: 400)
+    .padding()
+}

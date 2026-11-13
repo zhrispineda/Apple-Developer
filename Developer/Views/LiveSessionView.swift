@@ -135,3 +135,32 @@ struct LiveBadge: View {
             .accessibilityLabel("Live")
     }
 }
+
+#Preview {
+    let start = Date.now.addingTimeInterval(3600)
+    let item = ContentItem(
+        id: "wwdc2026-101",
+        eventID: "wwdc2026",
+        eventName: "WWDC26",
+        number: 101,
+        type: "Video",
+        title: "Keynote",
+        summary: "Join us for an exciting look at the latest innovations across Apple platforms.",
+        webURL: URL(string: "https://developer.apple.com/videos/play/wwdc2026/101/")!,
+        startTime: start,
+        endTime: start.addingTimeInterval(5400),
+        publishedAt: nil,
+        duration: nil,
+        videoURL: nil,
+        hasLiveStream: true,
+        topics: [],
+        thumbnailURL: nil,
+        cardImageURL: nil,
+        posterURL: nil,
+        squareImageURL: nil
+    )
+    NavigationStack {
+        LiveSessionView(item: item)
+    }
+    .environment(ContentStore())
+}

@@ -76,7 +76,7 @@ struct NewsListView: View {
             }
         }
         .refreshable { await store.load() }
-        .task { if store.items.isEmpty { await store.load() } }
+        .task { await store.load() }
     }
 }
 

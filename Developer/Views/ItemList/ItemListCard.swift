@@ -47,3 +47,33 @@ struct ItemListCard: View {
         }
     }
 }
+
+#Preview {
+    let item = ContentItem(
+        id: "wwdc2014-605",
+        eventID: "wwdc2014",
+        eventName: "WWDC14",
+        number: 605,
+        type: "Video",
+        title: "Advanced Graphics and Animations for iOS Apps",
+        summary: "Hello",
+        webURL: URL(string: "https://developer.apple.com/videos/play/wwdc2014/605/")!,
+        startTime: nil,
+        endTime: nil,
+        publishedAt: nil,
+        duration: 3540,
+        videoURL: URL(string: "https://developer.apple.com/videos/play/wwdc2014/605/"),
+        hasLiveStream: false,
+        topics: [],
+        thumbnailURL: nil,
+        cardImageURL: nil,
+        posterURL: nil,
+        squareImageURL: nil
+    )
+
+    ItemListCard(item: item)
+        .frame(width: 320)
+        .padding()
+        .environment(ContentStore())
+        .environment(WatchProgressStore())
+}

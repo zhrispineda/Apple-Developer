@@ -58,3 +58,35 @@ struct PreferredTopicsList: View {
         }
     }
 }
+
+#Preview("PreferredTopics") {
+    @Previewable @State var storage = PreferredTopics.encode(["Swift", "SwiftUI & UI Frameworks"])
+
+    List {
+        Section {
+            ForEach(WWDCTopic.known) { topic in
+                Toggle(isOn: PreferredTopics.binding(for: topic, in: $storage)) {
+                    Label(topic.name, systemImage: topic.systemImage)
+                }
+            }
+        } footer: {
+            Text(PreferredTopics.decode(storage).sorted().formatted(.list(type: .and)))
+        }
+    }
+}
+
+#Preview("PreferredTopicsSettingsView") {
+    @Previewable @State var store = SessionStore()
+
+    PreferredTopicsSettingsView()
+        .environment(store)
+        .task { await store.load() }
+}
+
+#Preview("PreferredTopicsList") {
+    @Previewable @State var store = SessionStore()
+
+    PreferredTopicsList()
+        .environment(store)
+        .task { await store.load() }
+}

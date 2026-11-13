@@ -34,3 +34,18 @@ struct VideoDownloadButton: View {
         .removeDownloadConfirmation(isPresented: $isConfirmingRemoval, sessionID: session.id)
     }
 }
+
+#Preview {
+    VideoDownloadButton(session: WWDCSession(
+        id: "wwdc2025-256",
+        eventID: "wwdc2025",
+        sessionNumber: 256,
+        title: "What's new in SwiftUI",
+        topics: ["SwiftUI & UI Frameworks"],
+        duration: "25:54",
+        thumbnailURL: nil,
+        url: URL(string: "https://developer.apple.com/videos/play/wwdc2025/256/")!
+    ))
+    .padding()
+    .environment(DownloadEngine())
+}

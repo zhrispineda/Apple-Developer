@@ -39,3 +39,26 @@ struct RelatedResourcesView: View {
         }
     }
 }
+
+#Preview("Resources card") {
+    ScrollView {
+        RelatedResourcesView(resources: [
+            SessionResource(
+                title: "ActivityKit",
+                url: URL(string: "https://developer.apple.com/documentation/ActivityKit")!,
+                kind: .document
+            ),
+            SessionResource(
+                title: "Human Interface Guidelines: Live Activities",
+                url: URL(string: "https://developer.apple.com/design/human-interface-guidelines/live-activities")!,
+                kind: .document
+            ),
+            SessionResource(
+                title: "Emoji Rangers: Supporting Live Activities, interactivity, and animations",
+                url: URL(string: "https://developer.apple.com/documentation/widgetkit/emoji-rangers-supporting-live-activities-interactivity-and-animations")!,
+                kind: .download
+            ),
+        ])
+        .padding()
+    }
+}

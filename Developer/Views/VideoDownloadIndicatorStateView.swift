@@ -28,3 +28,15 @@ struct VideoDownloadIndicatorStateView: View {
         .accessibilityValue(Text(progress, format: .percent.precision(.fractionLength(0))))
     }
 }
+
+#Preview {
+    HStack(spacing: 16) {
+        VideoDownloadIndicatorStateView(progress: 0)
+        VideoDownloadIndicatorStateView(progress: 0.25)
+        VideoDownloadIndicatorStateView(progress: 0.5)
+        VideoDownloadIndicatorStateView(progress: 0.75)
+        VideoDownloadIndicatorStateView(progress: 1)
+        VideoDownloadIndicatorStateView(progress: 0.6, size: 36)
+    }
+    .padding()
+}

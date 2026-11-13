@@ -26,3 +26,18 @@ struct PullQuote: View {
         .padding(.vertical, 8)
     }
 }
+
+#Preview("Pull quote") {
+    VStack(alignment: .leading, spacing: 24) {
+        PullQuote(
+            quote: "SwiftUI lets you build great-looking apps across all Apple platforms with the power of Swift.",
+            author: "Apple Developer"
+        )
+        PullQuote(
+            quote: "A quote with **bold** and *italic* markdown, and no author.",
+            author: nil
+        )
+    }
+    .padding()
+    .frame(width: 480)
+}

@@ -43,3 +43,31 @@ struct ItemListWideCard: View {
         .contentShape(.rect)
     }
 }
+
+#Preview {
+    let item = ContentItem(
+        id: "wwdc2014-605",
+        eventID: "wwdc2014",
+        eventName: "WWDC14",
+        number: 605,
+        type: "Video",
+        title: "Advanced Graphics and Animations for iOS Apps",
+        summary: "Hello",
+        webURL: URL(string: "https://developer.apple.com/videos/play/wwdc2014/605/")!,
+        startTime: nil,
+        endTime: nil,
+        publishedAt: .now,
+        duration: 3540,
+        videoURL: URL(string: "https://developer.apple.com/videos/play/wwdc2014/605/"),
+        hasLiveStream: false,
+        topics: [],
+        thumbnailURL: nil,
+        cardImageURL: nil,
+        posterURL: nil,
+        squareImageURL: nil
+    )
+
+    ItemListWideCard(item: item)
+        .frame(width: 400)
+        .padding()
+}

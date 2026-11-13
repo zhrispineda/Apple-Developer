@@ -71,6 +71,17 @@ struct MarkdownText: View {
     }
 }
 
+#Preview {
+    VStack(alignment: .leading, spacing: 12) {
+        MarkdownText(markdown: "Plain **bold**, *italic*, `code`, and a [link](https://developer.apple.com).")
+        MarkdownText(markdown: "Large Title", style: TextStyle(textStyle: "largeTitle", weight: "bold"))
+        MarkdownText(markdown: "Headline in secondary", style: TextStyle(textStyle: "headline", color: "secondary"))
+        MarkdownText(markdown: "Custom 22pt semibold blue", style: TextStyle(pointSize: 22, weight: "semibold", color: "blue"))
+        MarkdownText(markdown: "Hex color caption", style: TextStyle(textStyle: "caption", color: "#FF6600"))
+    }
+    .padding()
+}
+
 extension Color {
     init?(hexString: String) {
         let digits = hexString.hasPrefix("#") ? hexString.dropFirst() : Substring(hexString)

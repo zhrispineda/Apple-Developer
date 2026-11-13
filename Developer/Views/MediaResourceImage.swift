@@ -24,3 +24,13 @@ struct MediaResourceImage: View {
         .accessibilityHidden(resource.accessibilityDescription == nil)
     }
 }
+
+#Preview {
+    MediaResourceImage(resource: MediaResource(
+        baseURL: URL(string: "https://devimages-cdn.apple.com/wwdc-services/articles/images/4310983B-86A3-4D1D-A9C3-1292AFFCAB35")!,
+        aspectRatio: 16 / 9,
+        caption: "",
+        accessibilityDescription: "Preview image"
+    ))
+    .padding()
+}

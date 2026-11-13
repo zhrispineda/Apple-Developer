@@ -18,3 +18,7 @@ struct URLButton: View {
         .buttonBorderShape(.capsule)
     }
 }
+
+#Preview {
+    URLButton(title: "Example", url: URL(string: "")!)
+}

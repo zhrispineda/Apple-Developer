@@ -41,3 +41,29 @@ struct RelatedResourceRow: View {
         .buttonStyle(.plain)
     }
 }
+
+#Preview {
+    List {
+        RelatedResourceRow(resource: ContentResource(
+            id: 1,
+            title: "Building a document-based app with SwiftUI",
+            url: URL(string: "https://developer.apple.com/documentation/swiftui")!,
+            type: "samplecode",
+            summary: "Create, save, and open documents in a multiplatform app."
+        ))
+        RelatedResourceRow(resource: ContentResource(
+            id: 2,
+            title: "Human Interface Guidelines",
+            url: URL(string: "https://developer.apple.com/design/human-interface-guidelines")!,
+            type: "guide",
+            summary: nil
+        ))
+        RelatedResourceRow(resource: ContentResource(
+            id: 3,
+            title: "Developer Forums",
+            url: URL(string: "https://developer.apple.com/forums")!,
+            type: "developerForum",
+            summary: "Ask questions and discuss topics with other developers."
+        ))
+    }
+}

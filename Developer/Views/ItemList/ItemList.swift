@@ -33,3 +33,28 @@ struct ItemList: View {
         .task { await store.monitorLive() }
     }
 }
+
+#Preview {
+    @Previewable @State var store = ContentStore()
+    let list = store.sections(for: .discover).lazy.compactMap { section -> DiscoverItemList? in
+        if case .itemList(let list) = section { list } else { nil }
+    }.first
+
+    NavigationStack {
+        if let list {
+            ItemList(list: list)
+        } else {
+            ProgressView()
+        }
+    }
+    .task { await store.load() }
+    .environment(store)
+    .environment(NewsStore())
+    .environment(SessionStore())
+    .environment(WatchProgressStore())
+    .environment(DownloadEngine())
+    .environment(SynchronizedListManager())
+    #if os(macOS)
+    .frame(width: 900, height: 700)
+    #endif
+}
