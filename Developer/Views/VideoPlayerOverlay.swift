@@ -11,32 +11,32 @@ struct VideoPlayerOverlay: View {
     let onPlay: () -> Void
 
     var body: some View {
-        Button {
-            onPlay()
-        } label: {
-            ZStack {
-                Color.black
-                if let url {
-                    AsyncImage(request: URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)) { image in
-                        image.resizable().scaledToFill()
-                    } placeholder: {
-                        Color.black
-                    }
-                }
-
-                if isReady {
-                    playIcon
-                } else {
-                    ProgressView()
-                        .tint(.white)
+        ZStack {
+            Color.black
+            if let url {
+                AsyncImage(request: URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    Color.black
                 }
             }
-            .clipped()
-            .contentShape(.rect)
+
+            if isReady {
+                Button {
+                    onPlay()
+                } label: {
+                    playIcon
+                        .background(.regularMaterial, in: .circle)
+                        .environment(\.colorScheme, .dark)
+                }
+                .buttonStyle(PlayButtonStyle())
+                .accessibilityLabel("Play")
+            } else {
+                ProgressView()
+                    .tint(.white)
+            }
         }
-        .buttonStyle(.plain)
-        .disabled(!isReady)
-        .accessibilityLabel("Play")
+        .clipped()
     }
 
     @ViewBuilder
@@ -45,14 +45,23 @@ struct VideoPlayerOverlay: View {
         Image(systemName: "play.fill")
             .font(.system(size: 40))
             .foregroundStyle(.white)
-            .shadow(color: .black.opacity(0.4), radius: 8)
+            .frame(width: 80, height: 80)
         #else
         Image(systemName: "play.fill")
             .font(.system(size: 32))
             .foregroundStyle(.white)
             .frame(width: 64, height: 64)
-            .background(.black.opacity(0.6), in: .circle)
         #endif
+    }
+}
+
+private struct PlayButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.85 : 1)
+            .animation(.spring(duration: 0.5, bounce: 0.4), value: configuration.isPressed)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(.rect)
     }
 }
 

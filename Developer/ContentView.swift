@@ -94,18 +94,6 @@ struct ContentView: View {
     }
 }
 
-struct PlaceholderTabView: View {
-    let title: String
-    let systemImage: String
-
-    var body: some View {
-        NavigationStack {
-            ContentUnavailableView(title, systemImage: systemImage, description: Text("Coming soon."))
-                .navigationTitle(title)
-        }
-    }
-}
-
 #Preview {
     ContentView()
         .environment(SessionStore())

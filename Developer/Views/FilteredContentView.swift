@@ -156,6 +156,7 @@ struct FilteredContentView: View {
         #if os(macOS)
         .listStyle(.inset)
         .alternatingRowBackgrounds()
+        .environment(\.defaultMinListRowHeight, 70)
         #else
         .listStyle(.plain)
         #endif
