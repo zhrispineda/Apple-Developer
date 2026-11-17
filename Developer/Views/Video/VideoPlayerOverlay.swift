@@ -5,6 +5,7 @@
 
 import SwiftUI
 
+/// A view overlay on top of videos that displays loading progress and a play button.
 struct VideoPlayerOverlay: View {
     let url: URL?
     let isReady: Bool
@@ -13,6 +14,7 @@ struct VideoPlayerOverlay: View {
     var body: some View {
         ZStack {
             Color.black
+            
             if let url {
                 AsyncImage(request: URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)) { image in
                     image.resizable().scaledToFill()
@@ -43,9 +45,9 @@ struct VideoPlayerOverlay: View {
     private var playIcon: some View {
         #if os(macOS)
         Image(systemName: "play.fill")
-            .font(.system(size: 40))
+            .font(.system(size: 28))
             .foregroundStyle(.white)
-            .frame(width: 80, height: 80)
+            .frame(width: 60, height: 60)
         #else
         Image(systemName: "play.fill")
             .font(.system(size: 32))

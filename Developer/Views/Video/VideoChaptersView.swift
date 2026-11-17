@@ -5,6 +5,8 @@
 
 import SwiftUI
 
+/// A view of chapters for a session video.
+/// Clicking a chapter will jump to its selected timestamp.
 struct VideoChaptersView: View {
     let chapters: [SessionChapter]
     let onSeek: (Double) -> Void

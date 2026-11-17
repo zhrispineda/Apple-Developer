@@ -92,7 +92,7 @@ struct BrowseView: View {
             Label {
                 Text(title)
             } icon: {
-                Image(symbol: systemImage)
+                SymbolIcon(name: systemImage)
                     .foregroundStyle(.tint)
             }
         }

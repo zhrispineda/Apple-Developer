@@ -15,7 +15,8 @@ nonisolated struct WWDCEvent: Identifiable, Hashable, Sendable {
     }
 
     static let meetWithApple = WWDCEvent(id: "meet-with-apple", name: "Meet with Apple", systemImage: "wwdc.badge")
-    static let techTalks = WWDCEvent(id: "tech-talks", name: "Tech Talks", systemImage: "rectangle.inset.filled.and.person.filled")
+    // Icon: https://devimages-cdn.apple.com/wwdc-services/images/topic-glyphs/Source-TechTalks.pdf
+    static let techTalks = WWDCEvent(id: "tech-talks", name: "Tech Talks", systemImage: "tech.talks")
 
     var showsNewestFirst: Bool {
         self == .techTalks || self == .meetWithApple

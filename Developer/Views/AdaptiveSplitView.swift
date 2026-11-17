@@ -160,7 +160,7 @@ struct SidebarView: View {
                         Label {
                             Text(event.name)
                         } icon: {
-                            Image(symbol: event.systemImage)
+                            SymbolIcon(name: event.systemImage)
                         }
                         .tag(SidebarItem.event(event))
                     }

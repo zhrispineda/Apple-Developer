@@ -5,6 +5,8 @@
 
 import SwiftUI
 
+/// A view of a download button.
+/// Downloading displays progress while also acting as a stop button until complete.
 struct VideoDownloadButton: View {
     let session: WWDCSession
 
