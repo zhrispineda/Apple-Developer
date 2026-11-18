@@ -50,6 +50,8 @@ struct ContentItemRow: View {
     }
 }
 
+/// Row item view for a session video in lists.
+/// Shows session thumbnail, title, event, and video length or watch progress.
 struct ContentItemWideRow: View {
     let entry: ContentEntry
 
@@ -62,6 +64,7 @@ struct ContentItemWideRow: View {
     #endif
 
     @Environment(WatchProgressStore.self) private var progressStore
+    @Environment(SynchronizedListManager.self) private var bookmarkStore
 
     init(entry: ContentEntry) {
         self.entry = entry
@@ -80,6 +83,13 @@ struct ContentItemWideRow: View {
                 .lineLimit(2)
                 // The title fills the remaining width; the trailing columns keep their size.
                 .frame(minWidth: 120, maxWidth: .infinity, alignment: .leading)
+
+            if bookmarkStore.isBookmarked(entry.id) {
+                Image(systemName: "bookmark.fill")
+                    .frame(width: 20)
+                    .foregroundStyle(.tint)
+                    .accessibilityLabel("Bookmarked")
+            }
 
             Text(entry.eventName)
                 .foregroundStyle(.secondary)
@@ -166,6 +176,7 @@ struct ContentItemWideRow: View {
     }
     .environment(WatchProgressStore())
     .environment(DownloadEngine())
+    .environment(SynchronizedListManager(cloud: NSUbiquitousKeyValueStore.default))
     #if os(macOS)
     .frame(width: 700, height: 200)
     #endif
