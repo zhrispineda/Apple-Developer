@@ -62,6 +62,8 @@ struct ContentItemVideoDetail: View {
         }
         #if !os(macOS)
         .navigationBarTitleDisplayMode(.inline)
+        #else
+        .navigationTitle("")
         #endif
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {

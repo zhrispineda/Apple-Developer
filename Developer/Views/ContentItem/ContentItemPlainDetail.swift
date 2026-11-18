@@ -31,8 +31,8 @@ struct ContentItemPlainDetail: View {
             return .handled
         })
         .navigationDestination(item: $linkedRoute) { RouteView(route: $0) }
-        #if os(iOS)
         .navigationTitle("")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar {

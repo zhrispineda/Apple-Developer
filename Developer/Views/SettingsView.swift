@@ -52,9 +52,6 @@ private struct GeneralSettingsView: View {
             Divider()
 
             Toggle("Automatically send diagnostics and usage", isOn: $sendsDiagnostics)
-            Text("Help Apple improve the Developer app by automatically sending diagnostic and usage data. For details, see the updated Software License Agreement in the Help menu.")
-                .font(.callout)
-                .fixedSize(horizontal: false, vertical: true)
         }
         .settingsPane()
     }
@@ -73,13 +70,6 @@ private struct NotificationSettingsView: View {
             Toggle("Featured Stories", isOn: $featuredStories)
             Toggle("WWDC", isOn: $wwdc)
             Toggle("Tech Talks", isOn: $techTalks)
-
-            Spacer()
-                .frame(height: 40)
-
-            Text("If you’re signed in to the Apple Developer app, your notification settings are synchronized across all devices where you’re signed in with the same Apple Account. If you’re not signed in, notification settings are per device.")
-                .font(.callout)
-                .fixedSize(horizontal: false, vertical: true)
         }
         .settingsPane()
     }
