@@ -84,6 +84,12 @@ final class WatchProgressStore {
         save()
     }
 
+    func removeFromHistory(sessionID: String) {
+        let duration = progress[sessionID]?.duration ?? 0
+        progress[sessionID] = WatchProgress(position: 0, duration: duration, isWatched: false, updatedAt: .now)
+        save()
+    }
+
     // MARK: Persistence and iCloud sync
 
     private func save(throttled: Bool = false) {

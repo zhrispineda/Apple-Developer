@@ -464,16 +464,22 @@ struct HistoryView: View {
 
     var body: some View {
         let sessions = store.sessions(orderedByIDs: progressStore.historySessionIDs)
-        FilteredContentView(title: "History", sessions: sessions)
-            .overlay {
-                if sessions.isEmpty {
-                    ContentUnavailableView(
-                        "No History",
-                        systemImage: "clock.arrow.circlepath",
-                        description: Text("Videos you watch will appear here.")
-                    )
-                }
+        FilteredContentView(
+            title: "History",
+            sessions: sessions,
+            removeAction: .init(title: "Remove from History") { entry in
+                progressStore.removeFromHistory(sessionID: entry.id)
             }
+        )
+        .overlay {
+            if sessions.isEmpty {
+                ContentUnavailableView(
+                    "No History",
+                    systemImage: "clock.arrow.circlepath",
+                    description: Text("Videos you watch will appear here.")
+                )
+            }
+        }
     }
 }
 

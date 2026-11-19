@@ -15,23 +15,43 @@ struct FilteredContentView: View {
     var shareURL: URL? = nil
     var shareLabel: LocalizedStringKey = "Share…"
     var allowsPreferredTopicsFilter = true
+    var removeAction: RemoveAction? = nil
+
+    struct RemoveAction {
+        let title: LocalizedStringKey
+        let perform: (ContentEntry) -> Void
+    }
 
     init(
         title: String,
         groups: [ContentItemGroup],
         shareURL: URL? = nil,
         shareLabel: LocalizedStringKey = "Share…",
-        allowsPreferredTopicsFilter: Bool = true
+        allowsPreferredTopicsFilter: Bool = true,
+        removeAction: RemoveAction? = nil
     ) {
         self.title = title
         self.groups = groups
         self.shareURL = shareURL
         self.shareLabel = shareLabel
         self.allowsPreferredTopicsFilter = allowsPreferredTopicsFilter
+        self.removeAction = removeAction
     }
 
-    init(title: String, sessions: [WWDCSession], shareURL: URL? = nil, shareLabel: LocalizedStringKey = "Share…") {
-        self.init(title: title, groups: [ContentItemGroup(sessions: sessions)], shareURL: shareURL, shareLabel: shareLabel)
+    init(
+        title: String,
+        sessions: [WWDCSession],
+        shareURL: URL? = nil,
+        shareLabel: LocalizedStringKey = "Share…",
+        removeAction: RemoveAction? = nil
+    ) {
+        self.init(
+            title: title,
+            groups: [ContentItemGroup(sessions: sessions)],
+            shareURL: shareURL,
+            shareLabel: shareLabel,
+            removeAction: removeAction
+        )
     }
 
     @Environment(WatchProgressStore.self) private var progressStore
@@ -145,6 +165,13 @@ struct FilteredContentView: View {
                                 ContentItemRow(entry: entry)
                             }
                         }
+                        .swipeActions {
+                            if let removeAction {
+                                Button(removeAction.title, systemImage: "trash", role: .destructive) {
+                                    removeAction.perform(entry)
+                                }
+                            }
+                        }
                     }
                 } header: {
                     if let title = group.title {
@@ -203,7 +230,16 @@ struct FilteredContentView: View {
     private func link(for entry: ContentEntry, @ViewBuilder label: () -> some View) -> some View {
         if let session = entry.session {
             NavigationLink(value: Route.session(session), label: label)
-                .sessionContextMenu(for: session)
+                .contextMenu {
+                    ContentItemContextMenu(session: session)
+                    if let removeAction {
+                        Section {
+                            Button(removeAction.title, systemImage: "trash", role: .destructive) {
+                                removeAction.perform(entry)
+                            }
+                        }
+                    }
+                }
         } else if case .article(let item) = entry {
             NavigationLink(value: entry.route, label: label)
                 .articleContextMenu(for: item)

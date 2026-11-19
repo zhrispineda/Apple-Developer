@@ -27,7 +27,7 @@ struct SettingsView: View {
                 NotificationSettingsView()
             }
             
-            Tab("Preferred Topics", systemImage: "square.grid.3x3.fill") {
+            Tab("Preferred Topics", systemImage: "square.grid.3x3.topleft.filled") {
                 PreferredTopicsSettingsPane()
             }
         }
