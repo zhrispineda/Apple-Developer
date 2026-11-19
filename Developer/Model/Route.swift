@@ -11,6 +11,11 @@ enum Route: Hashable {
     case news(NewsItem)
     case live(ContentItem)
     case discoverList(DiscoverItemList)
+    case library(LibraryDestination)
+}
+
+enum LibraryDestination: Hashable {
+    case history, bookmarks, notes, playlist(UUID)
 }
 
 struct OpenRouteAction {
@@ -48,6 +53,14 @@ struct RouteView: View {
             LiveSessionView(item: item)
         case .discoverList(let list):
             ItemList(list: list)
+        case .library(.history):
+            HistoryView()
+        case .library(.bookmarks):
+            BookmarkedVideosView()
+        case .library(.notes):
+            NotedVideosView()
+        case .library(.playlist(let id)):
+            PlaylistView(playlistID: id)
         }
     }
 }

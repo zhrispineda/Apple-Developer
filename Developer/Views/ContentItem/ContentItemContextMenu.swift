@@ -20,6 +20,7 @@ struct ContentItemContextMenu: View {
 
     @Environment(WatchProgressStore.self) private var progressStore
     @Environment(DownloadEngine.self) private var downloadStore
+    @Environment(NotesStore.self) private var notesStore: NotesStore?
 
     private var isWatched: Bool {
         progressStore.progress(for: session.id)?.isWatched ?? false
@@ -36,6 +37,14 @@ struct ContentItemContextMenu: View {
             }
 
             BookmarkMenuButton(id: session.id)
+
+            AddToPlaylistMenu(sessionID: session.id)
+
+            if let notesStore, notesStore.hasNote(for: session.id) {
+                Button("Delete Note", systemImage: "trash", role: .destructive) {
+                    notesStore.deleteNote(for: session.id)
+                }
+            }
 
             if isWatched {
                 Button("Mark as Unwatched", systemImage: "square") {

@@ -6,7 +6,7 @@
 import SwiftUI
 
 enum SidebarItem: Hashable {
-    case search, discover, wwdc
+    case search, discover, wwdc, library
     case news, bookmarks, downloaded, continueWatching
     case topic(WWDCTopic)
     case event(WWDCEvent)
@@ -97,6 +97,8 @@ struct AdaptiveSplitView: View {
             ContentPageView()
         case .wwdc:
             ContentPageView(root: .wwdc)
+        case .library:
+            LibraryView(embedsInNavigationStack: false)
         case .news:
             NewsListView()
         case .bookmarks:
@@ -134,6 +136,7 @@ struct SidebarView: View {
                 Label("Search", systemImage: "magnifyingglass").tag(SidebarItem.search)
                 Label("Discover", systemImage: "star").tag(SidebarItem.discover)
                 Label("WWDC", image: "wwdc.badge").tag(SidebarItem.wwdc)
+                Label("Library", systemImage: "film.stack").tag(SidebarItem.library)
             }
 
             Section("Browse", isExpanded: $browseExpanded) {
@@ -182,6 +185,8 @@ struct SidebarView: View {
         .environment(store)
         .environment(WatchProgressStore())
         .environment(SynchronizedListManager())
+        .environment(PlaylistStore())
+        .environment(NotesStore())
         .environment(NewsStore())
         .environment(ContentStore())
         .environment(DownloadEngine())

@@ -50,6 +50,13 @@ final class WatchProgressStore {
             .map(\.key)
     }
 
+    var historySessionIDs: [String] {
+        progress
+            .filter { $0.value.isWatched || $0.value.position > 0 }
+            .sorted { ($0.value.updatedAt ?? .distantPast) > ($1.value.updatedAt ?? .distantPast) }
+            .map(\.key)
+    }
+
     func update(sessionID: String, position: Double, duration: Double) {
         guard duration > 0, position.isFinite else { return }
         let nearEnd = position >= duration - Self.watchedThreshold || position >= duration * 0.95

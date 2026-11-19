@@ -11,12 +11,13 @@ struct ContentItemVideoDetail: View {
         case about = "About"
         case transcript = "Transcript"
         case code = "Code"
+        case notes = "Notes"
 
         var id: Self { self }
     }
 
     private var availableTabs: [InfoTab] {
-        details?.codeSamples?.isEmpty == false ? InfoTab.allCases : [.about, .transcript]
+        details?.codeSamples?.isEmpty == false ? InfoTab.allCases : [.about, .transcript, .notes]
     }
 
     let session: WWDCSession
@@ -137,6 +138,8 @@ struct ContentItemVideoDetail: View {
             )
         case .code:
             CodeSnippetsPane(samples: details?.codeSamples ?? [], onSeek: seek(to:))
+        case .notes:
+            SessionNotesPane(sessionID: session.id, clock: clock, onSeek: seek(to:))
         }
     }
 
@@ -275,6 +278,7 @@ final class PlaybackClock {
     .environment(DownloadEngine())
     .environment(SynchronizedListManager())
     .environment(SessionStore())
+    .environment(NotesStore())
 }
 
 #Preview("Chapters") {
@@ -294,6 +298,7 @@ final class PlaybackClock {
     .environment(DownloadEngine())
     .environment(SynchronizedListManager())
     .environment(SessionStore())
+    .environment(NotesStore())
     #if os(macOS)
     // A wide window, to check the video fills the width.
     .frame(width: 1000, height: 760)

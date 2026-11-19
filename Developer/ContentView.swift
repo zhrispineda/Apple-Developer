@@ -9,6 +9,11 @@ struct ContentView: View {
     @Environment(SessionStore.self) private var store
     @State private var progressStore = WatchProgressStore(cloud: NSUbiquitousKeyValueStore.default)
     @State private var bookmarkStore = SynchronizedListManager(cloud: NSUbiquitousKeyValueStore.default)
+    @State private var playlistStore = PlaylistStore(cloud: NSUbiquitousKeyValueStore.default)
+    @State private var notesStore = NotesStore(cloud: NSUbiquitousKeyValueStore.default)
+    @State private var isCreatingPlaylist = false
+    /// The session to add once the playlist requested from a context menu is created.
+    @State private var pendingPlaylistSessionID: String?
     @State private var newsStore = NewsStore()
     @State private var discoverStore = ContentStore()
     @State private var downloadStore = DownloadEngine.shared
@@ -39,8 +44,17 @@ struct ContentView: View {
         }
         .asyncImageURLSession(WWDCCache.imageSession)
         .downloadErrorAlert()
+        .playlistTitleAlert("New Playlist", isPresented: $isCreatingPlaylist, confirmLabel: "Create") { title in
+            playlistStore.create(title: title, sessionIDs: pendingPlaylistSessionID.map { [$0] } ?? [])
+        }
+        .environment(\.newPlaylist, NewPlaylistAction { sessionID in
+            pendingPlaylistSessionID = sessionID
+            isCreatingPlaylist = true
+        })
         .environment(progressStore)
         .environment(bookmarkStore)
+        .environment(playlistStore)
+        .environment(notesStore)
         .environment(newsStore)
         .environment(discoverStore)
         .environment(downloadStore)
@@ -83,8 +97,8 @@ struct ContentView: View {
                 }
             }
 
-            Tab("Account", systemImage: "person.crop.circle", value: .account) {
-                EmptyView()
+            Tab("Library", systemImage: "film.stack", value: .account) {
+                LibraryView()
             }
 
             Tab(value: .search, role: .search) {
