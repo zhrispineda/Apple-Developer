@@ -228,7 +228,7 @@ struct ContentItemVideoDetail: View {
         hasStartedPlayback = false
 
         var resolved = await WWDCCache.loadDetails(for: session.id)
-        if resolved == nil || resolved?.videoURL == nil || resolved?.transcript == nil || resolved?.chapters == nil || resolved?.codeSamples == nil
+        if resolved == nil || resolved?.videoURL == nil || resolved?.transcript?.isEmpty != false || resolved?.chapters == nil || resolved?.codeSamples == nil
             || resolved?.resources == nil || resolved?.relatedVideos == nil {
             do {
                 let fetched = try await service.fetchDetails(for: session)

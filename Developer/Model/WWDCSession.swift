@@ -73,7 +73,7 @@ nonisolated struct WWDCSessionDetails: Codable, Sendable {
     let videoURL: URL?
     var downloadURL: URL? = nil
     let summary: String?
-    let transcript: [TranscriptParagraph]?
+    var transcript: [TranscriptParagraph]?
     var chapters: [SessionChapter]?
     var codeSamples: [CodeSample]?
     var resources: [SessionResource]?

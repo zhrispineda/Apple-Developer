@@ -46,9 +46,73 @@ nonisolated struct WWDCVideoService: Sendable {
         if let http = response as? HTTPURLResponse, http.statusCode != 200 {
             throw URLError(.badServerResponse)
         }
-        return Self.parseDetails(from: String(decoding: data, as: UTF8.self))
+        var details = Self.parseDetails(from: String(decoding: data, as: UTF8.self))
+        // Some pages (e.g. newer Tech Talks) ship an empty transcript section; the CDN feed still has it.
+        if details.transcript?.isEmpty != false {
+            do {
+                details.transcript = try await fetchFeedTranscript(for: wwdcSession.id)
+            } catch {
+                print("Failed to fetch feed transcript for \(wwdcSession.id): \(error)")
+            }
+        }
+        return details
     }
-    
+
+    // MARK: Feed transcripts
+
+    private struct TranscriptManifest: Decodable {
+        struct Entry: Decodable {
+            let url: URL
+        }
+
+        let individual: [String: Entry]
+    }
+
+    private struct FeedTranscript: Decodable {
+        struct Segment: Decodable {
+            let start: Double
+            let text: String
+
+            init(from decoder: any Decoder) throws {
+                var container = try decoder.unkeyedContainer()
+                start = try container.decode(Double.self)
+                text = try container.decode(String.self)
+            }
+        }
+
+        let transcript: [Segment]
+    }
+
+    private static let transcriptManifestURL = FeedFetcher.feedBaseURL.appending(path: "transcript-manifest-eng.json")
+
+    func fetchFeedTranscript(for sessionID: String) async throws -> [TranscriptParagraph] {
+        let (manifestData, _) = try await session.data(from: Self.transcriptManifestURL)
+        let manifest = try JSONDecoder().decode(TranscriptManifest.self, from: manifestData)
+        guard let entry = manifest.individual[sessionID] else { return [] }
+
+        let (data, _) = try await session.data(from: entry.url)
+        let transcripts = try JSONDecoder().decode([String: FeedTranscript].self, from: data)
+        return Self.paragraphs(from: transcripts[sessionID]?.transcript ?? [])
+    }
+
+    /// Feed segments mark paragraph ends with a trailing blank line.
+    private static func paragraphs(from segments: [FeedTranscript.Segment]) -> [TranscriptParagraph] {
+        var paragraphs: [TranscriptParagraph] = []
+        var sentences: [TranscriptParagraph.Sentence] = []
+        for segment in segments {
+            let text = segment.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !text.isEmpty {
+                sentences.append(TranscriptParagraph.Sentence(start: segment.start, text: text))
+            }
+            if segment.text.hasSuffix("\n\n"), !sentences.isEmpty {
+                paragraphs.append(TranscriptParagraph(sentences: sentences))
+                sentences = []
+            }
+        }
+        if !sentences.isEmpty { paragraphs.append(TranscriptParagraph(sentences: sentences)) }
+        return paragraphs
+    }
+
     static func parseDetails(from html: String) -> WWDCSessionDetails {
         let hls = html.firstMatch(of: /https:\/\/(?:devstreaming-cdn|events-delivery)\.apple\.com\/[^"'\s]+\.m3u8/)
         let download = html.firstMatch(of: /https:\/\/devstreaming-cdn\.apple\.com\/[^"'\s?]+_hd[^"'\s?]*\.(?:mp4|mov)/)
