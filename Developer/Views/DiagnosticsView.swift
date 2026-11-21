@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct DiagnosticsView: View {
     @Environment(CloudSyncMonitor.self) private var cloudMonitor
@@ -68,6 +69,12 @@ struct DiagnosticsView: View {
             LabeledContent("Keys in iCloud", value: cloudMonitor.keys.isEmpty ? "None" : cloudMonitor.keys.joined(separator: ", "))
             Button("Sync Now", systemImage: "arrow.triangle.2.circlepath") {
                 cloudMonitor.synchronize()
+            }
+            ShareLink(
+                item: CloudStoreExport(store: cloudMonitor.store),
+                preview: SharePreview(CloudStoreExport.fileName)
+            ) {
+                Label("Export iCloud Data", systemImage: "square.and.arrow.up")
             }
         } header: {
             Text("iCloud")
@@ -356,6 +363,46 @@ nonisolated enum ServiceProbe {
         } catch {
             return Result(endpoint: endpoint, statusCode: nil, latency: clock.now - start, errorDescription: error.localizedDescription)
         }
+    }
+}
+
+// MARK: - iCloud export
+
+/// A JSON snapshot of everything in the iCloud key-value store, for inspecting
+/// exactly what is synced (including deletion markers kept for merging).
+nonisolated struct CloudStoreExport: Transferable {
+    static let fileName = "iCloud Key-Value Store.json"
+
+    let data: Data
+
+    init(store: NSUbiquitousKeyValueStore) {
+        let values = store.dictionaryRepresentation.mapValues(Self.jsonValue)
+        let root: [String: Any] = [
+            "exportedAt": Date.now.formatted(.iso8601),
+            "values": values,
+        ]
+        data = (try? JSONSerialization.data(
+            withJSONObject: root, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        )) ?? Data()
+    }
+
+    static var transferRepresentation: some TransferRepresentation {
+        DataRepresentation(exportedContentType: .json) { $0.data }
+            .suggestedFileName(fileName)
+    }
+
+    private static func jsonValue(_ value: Any) -> Any {
+        if let data = value as? Data {
+            return (try? JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed))
+                ?? data.base64EncodedString()
+        }
+        if let date = value as? Date {
+            return date.formatted(.iso8601)
+        }
+        if JSONSerialization.isValidJSONObject([value]) {
+            return value
+        }
+        return String(describing: value)
     }
 }
 
