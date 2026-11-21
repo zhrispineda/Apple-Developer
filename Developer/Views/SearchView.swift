@@ -8,9 +8,9 @@ import SwiftUI
 struct SearchView: View {
     var embedsInNavigationStack = true
 
+    @AppStorage("recentSearches") private var recentSearchesStorage = ""
     @Environment(SessionStore.self) private var store
     @State private var searchText = ""
-    @AppStorage("recentSearches") private var recentSearchesStorage = ""
 
     private static let maxRecentSearches = 10
 
@@ -43,11 +43,12 @@ struct SearchView: View {
                 resultsView
             }
         }
-        .navigationTitle("Search")
         #if os(iOS)
+        .navigationTitle("Search")
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search")
         #else
         .searchable(text: $searchText, placement: .toolbar, prompt: "Search")
+        .navigationTitle("")
         #endif
         .onSubmit(of: .search) { addRecentSearch(searchText) }
     }
@@ -57,15 +58,11 @@ struct SearchView: View {
     @ViewBuilder
     private var recentSearchesView: some View {
         if recentSearches.isEmpty {
-            VStack(spacing: 4) {
-                Text("No Recent Searches")
-                    .font(.headline)
+            ContentUnavailableView {
+                Label("No Recent Searches", systemImage: "")
+            } description: {
                 Text("Recent searches will be added as you search for videos, articles, and more.")
-                    .foregroundStyle(.secondary)
             }
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 32)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
