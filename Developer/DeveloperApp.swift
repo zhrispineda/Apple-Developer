@@ -26,6 +26,9 @@ struct DeveloperApp: App {
             ContentView()
                 .environment(sessionStore)
         }
+        .commands {
+            TranscriptCommands()
+        }
         #if !os(macOS)
         .backgroundTask(.urlSession(DownloadEngine.backgroundSessionIdentifier)) {
             await DownloadEngine.shared.handleBackgroundEvents()

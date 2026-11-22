@@ -29,6 +29,7 @@ struct ContentItemVideoDetail: View {
     @State private var clock = PlaybackClock()
     @State private var videoAspectRatio: CGFloat = 16 / 9
     @State private var hasStartedPlayback = false
+    @State private var isSearchingTranscript = false
 
     @Environment(WatchProgressStore.self) private var progressStore
     @Environment(SynchronizedListManager.self) private var bookmarkStore
@@ -92,6 +93,10 @@ struct ContentItemVideoDetail: View {
                 }
             }
         }
+        .focusedSceneValue(\.findInTranscript, details?.transcript?.isEmpty == false ? FindInTranscriptAction(sessionID: session.id) {
+            selectedTab = .transcript
+            isSearchingTranscript = true
+        } : nil)
         .task(id: session.id) { await loadVideo() }
         .task(id: player) { await trackPlayback() }
         .onDisappear {
@@ -134,6 +139,7 @@ struct ContentItemVideoDetail: View {
             TranscriptPane(
                 paragraphs: details.map { $0.transcript ?? [] },
                 clock: clock,
+                isSearching: $isSearchingTranscript,
                 onSeek: seek(to:)
             )
         case .code:

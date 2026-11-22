@@ -12,7 +12,6 @@ struct ContentView: View {
     @State private var playlistStore = PlaylistStore(cloud: NSUbiquitousKeyValueStore.default)
     @State private var notesStore = NotesStore(cloud: NSUbiquitousKeyValueStore.default)
     @State private var isCreatingPlaylist = false
-    /// The session to add once the playlist requested from a context menu is created.
     @State private var pendingPlaylistSessionID: String?
     @State private var newsStore = NewsStore()
     @State private var discoverStore = ContentStore()
@@ -24,7 +23,7 @@ struct ContentView: View {
     #endif
     
     enum AppTab: Hashable {
-        case discover, browse, wwdc, account, search
+        case discover, browse, wwdc, library, search
     }
     
     var body: some View {
@@ -97,7 +96,7 @@ struct ContentView: View {
                 }
             }
 
-            Tab("Library", systemImage: "film.stack", value: .account) {
+            Tab("Library", systemImage: "film.stack", value: .library) {
                 LibraryView()
             }
 
