@@ -55,15 +55,12 @@ struct ContentItemRow: View {
 struct ContentItemWideRow: View {
     let entry: ContentEntry
 
-    @Environment(DownloadEngine.self) private var downloadStore
-
     #if os(macOS)
-    private static let thumbnailWidth: CGFloat = 96
+    static let thumbnailWidth: CGFloat = 96
     #else
-    private static let thumbnailWidth: CGFloat = 112
+    static let thumbnailWidth: CGFloat = 112
     #endif
 
-    @Environment(WatchProgressStore.self) private var progressStore
     @Environment(SynchronizedListManager.self) private var bookmarkStore
 
     init(entry: ContentEntry) {
@@ -115,12 +112,18 @@ struct ContentItemWideRow: View {
     @ViewBuilder
     private var statusText: some View {
         if let session = entry.session {
-            videoStatus(session)
+            ContentItemStatusText(session: session)
         }
     }
+}
 
-    @ViewBuilder
-    private func videoStatus(_ session: WWDCSession) -> some View {
+struct ContentItemStatusText: View {
+    let session: WWDCSession
+
+    @Environment(WatchProgressStore.self) private var progressStore
+    @Environment(DownloadEngine.self) private var downloadStore
+
+    var body: some View {
         let progress = progressStore.progress(for: session.id)
         if case .downloading(let fraction) = downloadStore.state(for: session.id) {
             VideoDownloadIndicatorStateView(progress: fraction)

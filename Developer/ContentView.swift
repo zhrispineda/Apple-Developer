@@ -59,6 +59,21 @@ struct ContentView: View {
         .environment(downloadStore)
         .environment(cloudMonitor)
         .task { await store.load() }
+        .task {
+            await discoverStore.load()
+            await newsStore.load()
+        }
+        .task(id: searchIndexInputs) {
+            guard store.hasCompletedInitialLoad, discoverStore.feed != nil else { return }
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            let documents = SpotlightIndex.documents(sessions: store.sessions, contentStore: discoverStore, news: newsStore.items)
+            await SpotlightIndex.shared.update(with: documents)
+        }
+    }
+
+    private var searchIndexInputs: [AnyHashable] {
+        [store.sessions.count, discoverStore.feed?.fetchedAt, newsStore.items.count]
     }
     
     @ViewBuilder

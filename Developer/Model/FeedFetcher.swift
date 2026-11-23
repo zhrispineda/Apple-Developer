@@ -77,6 +77,13 @@ nonisolated struct FeedFetcher: Sendable {
                 let hls: URL?
                 let duration: Double?
             }
+
+            struct CodeSnippet: Decodable {
+                let title: String?
+                let startTimeSeconds: Double?
+                /// Syntax-highlighted HTML.
+                let code: String
+            }
             
             let id: String
             let eventId: String
@@ -94,6 +101,7 @@ nonisolated struct FeedFetcher: Sendable {
             let media: Media?
             let hasLiveStream: Bool?
             let articleID: String?
+            let codeSnippets: [CodeSnippet]?
         }
         
         struct Resource: Decodable {
@@ -148,7 +156,12 @@ nonisolated struct FeedFetcher: Sendable {
                 cardImageURL: image("wide", "466x262"),
                 posterURL: image("wide", "900x506"),
                 squareImageURL: image("square", "162x162"),
-                articleID: content.articleID
+                articleID: content.articleID,
+                codeSamples: content.codeSnippets.map { snippets in
+                    snippets.map {
+                        CodeSample(start: $0.startTimeSeconds ?? 0, title: $0.title ?? "", tokens: WWDCVideoService.highlightTokens(from: $0.code))
+                    }
+                }
             )
         }
         let ascendingEventIDs = Set(raw.events.filter { $0.sortOrder?.hasSuffix("Ascending") == true }.map(\.id))

@@ -68,7 +68,7 @@ nonisolated struct WWDCVideoService: Sendable {
         let individual: [String: Entry]
     }
 
-    private struct FeedTranscript: Decodable {
+    struct FeedTranscript: Decodable {
         struct Segment: Decodable {
             let start: Double
             let text: String
@@ -86,6 +86,9 @@ nonisolated struct WWDCVideoService: Sendable {
     private static let transcriptManifestURL = FeedFetcher.feedBaseURL.appending(path: "transcript-manifest-eng.json")
 
     func fetchFeedTranscript(for sessionID: String) async throws -> [TranscriptParagraph] {
+        if let local = await TranscriptStore.shared.paragraphs(for: sessionID), !local.isEmpty {
+            return local
+        }
         let (manifestData, _) = try await session.data(from: Self.transcriptManifestURL)
         let manifest = try JSONDecoder().decode(TranscriptManifest.self, from: manifestData)
         guard let entry = manifest.individual[sessionID] else { return [] }
@@ -96,7 +99,7 @@ nonisolated struct WWDCVideoService: Sendable {
     }
 
     /// Feed segments mark paragraph ends with a trailing blank line.
-    private static func paragraphs(from segments: [FeedTranscript.Segment]) -> [TranscriptParagraph] {
+    static func paragraphs(from segments: [FeedTranscript.Segment]) -> [TranscriptParagraph] {
         var paragraphs: [TranscriptParagraph] = []
         var sentences: [TranscriptParagraph.Sentence] = []
         for segment in segments {

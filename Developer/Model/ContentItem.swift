@@ -26,6 +26,7 @@ nonisolated struct ContentItem: Codable, Hashable, Sendable, Identifiable {
     let posterURL: URL?
     let squareImageURL: URL?
     var articleID: String? = nil
+    var codeSamples: [CodeSample]? = nil
 
     var isArticle: Bool { type == "Article" }
 
@@ -123,7 +124,7 @@ nonisolated enum DiscoverSection: Codable, Hashable, Sendable, Identifiable {
 }
 
 nonisolated struct DiscoverFeed: Codable, Sendable {
-    static let currentFormatVersion = 3
+    static let currentFormatVersion = 4
 
     var items: [ContentItem]
     var sections: [DiscoverSection]
