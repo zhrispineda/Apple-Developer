@@ -28,8 +28,7 @@ final class SessionStore {
     }
 
     func sessions(in event: WWDCEvent) -> [WWDCSession] {
-        let sessions = sessionsByEvent[event.id, default: []]
-        return event.showsNewestFirst ? sessions.reversed() : sessions
+        sessionsByEvent[event.id, default: []].reversed()
     }
 
     func sessions(topic: String) -> [WWDCSession] {

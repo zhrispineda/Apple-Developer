@@ -18,10 +18,6 @@ nonisolated struct WWDCEvent: Identifiable, Hashable, Sendable {
     // Icon: https://devimages-cdn.apple.com/wwdc-services/images/topic-glyphs/Source-TechTalks.pdf
     static let techTalks = WWDCEvent(id: "tech-talks", name: "Tech Talks", systemImage: "tech.talks")
 
-    var showsNewestFirst: Bool {
-        self == .techTalks || self == .meetWithApple
-    }
-
     static let firstWWDCYear = 2014
     static func event(withID id: String) -> WWDCEvent? {
         if let year = id.wholeMatch(of: /wwdc(\d{4})/).flatMap({ Int($0.1) }) {
